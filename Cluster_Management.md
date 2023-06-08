@@ -244,11 +244,11 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-take-snaps
 > You must register a snapshot repository before you can perform snapshot and restore operations. We recommend creating a new snapshot repository for each major version. The valid repository settings depend on the repository type.
 
 
-:question: Backup and restore an index using `snapshots`
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/modules-snapshots.html (references other documentation)
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshot-restore.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-register-repository.html#self-managed-repo-types
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/restore-snapshot-api.html#restore-snapshot-api-index-settings
+:question: Backup and restore an index using `snapshots` <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/modules-snapshots.html (references other documentation)  <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshot-restore.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-register-repository.html#self-managed-repo-types <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/restore-snapshot-api.html#restore-snapshot-api-index-settings <br>
 
 1. :question: Backup the `shakespeare` index to a snapshot called `shakespeare_snapshot_<current_date>`
 
@@ -472,7 +472,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/searchable-snapshots
 > 
 > Searchable snapshots eliminate the need for replica shards, potentially halving the local storage needed to search your data. Searchable snapshots rely on the same snapshot mechanism you already use for backups and have minimal impact on your snapshot repository storage costs.
 
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ilm-searchable-snapshot.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ilm-searchable-snapshot.html  <br>
 Well worth watching: https://www.youtube.com/watch?v=nN6JNP9i3qQ
 
 :question:  Create a searchable snapshot of the Kibana eCommerce data.
@@ -680,10 +680,10 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/xpack-ccr.html
 >
 > Cross-cluster replication uses an active-passive model. You index to a leader index, and the data is replicated to one or more read-only follower indices. Before you can add a follower index to a cluster, you must configure the remote cluster that contains the leader index.
 
-This is a heavily involved process - follow this link - with the guidelines below
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ccr-getting-started.html (reference to the following)
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ccr-getting-started-tutorial.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/remote-clusters-connect.html  
+This is a heavily involved process - follow this link - with the guidelines below <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ccr-getting-started.html (reference to the following) <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ccr-getting-started-tutorial.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/remote-clusters-connect.html   <br>
 :question: Replicate `kibana_sample_data_ecommerce` from the `east` cluster to the `west cluster`
 
 <details>
