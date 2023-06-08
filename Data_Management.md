@@ -13,8 +13,8 @@ Example:
   }
 ```
 # Define and use an index template for a given pattern that satisfies a given set of requirements 
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/mapping.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/index-templates.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/mapping.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/index-templates.html <br>
 ```json
 PUT _template/accounts-tmpl
 {
@@ -43,10 +43,7 @@ PUT _template/accounts-tmpl
   }
 }
 ```
-To verify, 
-
-
-To perform the test:
+To verify, perform the test below:
 ```json
 POST accounts-new\_search?filter_path=hits.total.value
 {
@@ -127,9 +124,9 @@ PUT _ilm/policy/task3
 ```
 
 # Define an index template that creates a new data stream 
-https://www.elastic.co/guide/en/elasticsearch/reference/current/set-up-a-data-stream.html
-https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html
-This builds a test policy and index to verify index rotation
+https://www.elastic.co/guide/en/elasticsearch/reference/current/set-up-a-data-stream.html  <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html <br>
+This builds a test policy and index to verify index rotation <br>
 
 ## Create ILM template
 
