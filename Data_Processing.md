@@ -125,9 +125,9 @@ POST _reindex
 and
 
 # Define and use multi-fields with different data types and/or analyzers
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/mapping-types.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/analyzer.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/analysis-standard-analyzer.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/mapping-types.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/analyzer.html  <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/analysis-standard-analyzer.html  <br>
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/analysis-custom-analyzer.html#_configuration
 
 :question: 1. Write a custom analyzer that changes the name of `PRINCE HENRY` to `WAYWARD PRINCE HAL` in the `speaker` field, add this to a new index called `henry4_hal`
@@ -494,15 +494,15 @@ GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
 <details>
   <summary>View Solution (click to reveal)</summary>
 
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest-apis.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html#access-source-fields
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html#access-metadata-fields
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html#access-ingest-metadata
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/processors.html  
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/script-processor.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/set-processor.html
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/append-processor.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest-apis.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html#access-source-fields <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html#access-metadata-fields <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ingest.html#access-ingest-metadata <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/processors.html   <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/script-processor.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/set-processor.html <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/append-processor.html <br>
 
 > :warning: The value of ctx is read-only in if conditions.
 
@@ -729,8 +729,8 @@ GET accounts-2021/_doc/25?filter_path=*.balance,*.full_name,*.tags
 </details>
 <hr>
 
-# Configure an index so that it properly maintains the relationships of nested arrays of objects
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/nested.html
+# Configure an index so that it properly maintains the relationships of nested arrays of objects <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/nested.html <br>
 :question: 1. Using the below data, create an index with a mapping that allows for relationships to be queried.
 
 ```json
