@@ -29,8 +29,8 @@ GET shakespeare/_search
 </details>
 <hr>
 
-# Sort the results of a query by a given set of requirements
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/sort-search-results.html
+# Sort the results of a query by a given set of requirements <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/sort-search-results.html <br>
 :question: Return all of `Othellos` lines in reverse order.
 
 <details>
