@@ -21,12 +21,52 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/set-up-a-data-st
 https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html 
 
 ## Searching Data 
+Write and execute a search query for terms and/or phrases in one or more fields of an index
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-match-query.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-match-query-phrase.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-multi-match-query.html
+
 Term Level / Phrase queries <br>
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/term-level-queries.html
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/full-text-queries.html
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-match-query-phrase.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-wildcard-query.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-regexp-query.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-range-query.html
+
+Write and execute a search query that is a Boolean combination of multiple queries and filters
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/compound-queries.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/query-dsl-bool-query.html
+
+Write an asynchronous search
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/async-search.html
+
+Write and execute metric and bucket aggregations
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-aggregations.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-aggregations.html#return-only-agg-results
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-aggregations-metrics.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-aggregations-metrics-extendedstats-aggregation.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-aggregations-bucket.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-aggregations-pipeline.html
+
+Write and execute a query that searches across multiple clusters
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-search.html
 
 ## Developing Search Applications 
+Highlight the search terms in the response of a query
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/highlighting.html
+
+Sort the results of a query by a given set of requirements
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/sort-search-results.html
+
+Implement pagination of the results of a search query
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-request-from-size.html https://www.elastic.co/guide/en/elasticsearch/reference/8.1/paginate-search-results.html
+
+Define and use index aliases
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/indices-aliases.html
+
+Define and use a search template
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-template.html
 
 ## Data Processing 
 
