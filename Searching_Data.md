@@ -922,4 +922,5 @@ GET local_index,remote_cluster1:that_remote_index,remote_cluster2:that_other_rem
 </details>
 <hr>
 
-# Write and execute a search that utilizes a runtime field 
+# Write and execute a search that utilizes a runtime field <br>
+https://www.elastic.co/guide/en/elasticsearch/reference/current/runtime-search-request.html
