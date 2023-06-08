@@ -32,8 +32,7 @@ PUT broken_index/_doc/1
 
 <details>
   <summary>View Solution (click to reveal)</summary>
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/cluster-health.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/cluster-health.html
 
 ```json
 GET _cluster/health
@@ -60,9 +59,7 @@ GET _cluster/health
 ```
 
 ## Or
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/cat-health.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/cat-health.html
 ```json
 GET _cat/health?v
 
@@ -81,8 +78,7 @@ index health usually matches the cluster health
 
 <details>
   <summary>View Solution (click to reveal)</summary>
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/cat-indices.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/cat-indices.html
 
 > **Query Parameters**
 > **health**
@@ -110,7 +106,7 @@ yellow open broken_index               xHfY0EcGRq-RRZv_cQONCw 2 2      1 0     4
 
 Explain the index health
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/cluster-allocation-explain.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/cluster-allocation-explain.html
 
 ```json
 GET _cluster/allocation/explain
@@ -143,7 +139,7 @@ GET _cluster/allocation/explain
 <details>
   <summary>View Solution (click to reveal)</summary>
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/cat-shards.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/cat-shards.html
 
 ```json
 
@@ -165,7 +161,7 @@ Here we can see that a shard is `UNASSIGNED`.
 
 Why is that?
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/cluster-allocation-explain.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/cluster-allocation-explain.html
 
 A lot of information is presented here, if you have a larger underlying issue you will see many explainations across many indices.  Try to keep that in mind.
 
@@ -212,7 +208,7 @@ green  open   broken_index xHfY0EcGRq-RRZv_cQONCw   2   0          1            
 
 # Backup and restore a cluster and/or specific indices
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/backup-cluster.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-take-snapshot.html
 
 > You cannot back up an Elasticsearch cluster by simply taking a copy of the data directories of all of its nodes. 
 > 
@@ -249,26 +245,28 @@ https://www.elastic.co/guide/en/elasticsearch/reference/7.13/backup-cluster.html
 
 
 :question: Backup and restore an index using `snapshots`
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/modules-snapshots.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/modules-snapshots.html (references other documentation)
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshot-restore.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-register-repository.html#self-managed-repo-types
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/restore-snapshot-api.html#restore-snapshot-api-index-settings
 
 1. :question: Backup the `shakespeare` index to a snapshot called `shakespeare_snapshot_<current_date>`
 
 <details>
   <summary>View Solution (click to reveal)</summary>
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/snapshot-restore.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshot-restore.html
 
 You will need to make sure that the `path.repo` setting has been applied to each ElasticSearch node before doing this.
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/snapshots-register-repository.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-register-repository.html
 
 The docker images in this Git Repository have this set in the `1es-1kb-xpackSec.yml` single node cluster.  Which was used predominately through out the other sections.
 
 Normally you would save the snapshots to share storage like NFS, AWS S3 etc.   In this demo we use the local filesystem `/tmp` this is not recommended in production.
 
 
-This can all be done in the kibana GUI https://www.elastic.co/guide/en/kibana/7.13/snapshot-repositories.html
+This can all be done in the kibana GUI https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshot-restore.html
 
 ## Check that path.repo is set
 
@@ -317,8 +315,8 @@ Notice that `/tmp` needed to be available and that you can then append a path to
 
 Date math requires the snapshot name to be enclosed in angled brackets '<>' that is: '%3C' '%3E'
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/date-math-index-names.html#date-math-index-names
-> You must enclose date math names in angle brackets. If you use the name in a request path, `special characters must be URI encoded.`
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/api-conventions.html#api-date-math-index-names
+  > You must enclose date math names in angle brackets. If you use the name in a request path, `special characters must be URI encoded.`
 
 ```json
 PUT /_snapshot/my_test_backup/%3Cshakespeare-snapshot-%7Bnow%2Fd%7D%3E
@@ -414,8 +412,7 @@ yellow open   restored_index_shakespeare gKIdyU4jSnqmuBLRqPpZLw   1   1     1113
 
 3. :closed_book: Backup/Restore the cluster configuration
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/backup-cluster-configuration.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-take-snapshot.html#back-up-config-files
 > We recommend that you take regular (ideally, daily) backups of your Elasticsearch config ($ES_PATH_CONF) directory using the file backup software of your choice.
 
 Normally `/etc/elasticsearch`
@@ -432,8 +429,9 @@ So, it's a probably good idea to backup your `/etc/elasticsearch/` folder and ru
 
 4. :closed_book: Backup/Restore the Security configuration
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/security-backup.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/security-backup.html (just a reference to the following 2 links)
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-take-snapshot.html#back-up-config-files
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-take-snapshot.html#cluster-state-snapshots  
 ## Back up file-based security configuration
 > Elasticsearch security features are configured using the xpack.security namespace inside the elasticsearch.yml and elasticsearch.keystore files. In addition there are several other extra configuration files inside the same ES_PATH_CONF directory. These files define roles and role mappings and configure the file realm. 
 
@@ -469,15 +467,12 @@ See https://www.elastic.co/guide/en/elasticsearch/reference/7.13/restore-securit
 
 
 # Configure a snapshot to be searchable
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/searchable-snapshots.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/searchable-snapshots.html
 > Searchable snapshots let you use snapshots to search infrequently accessed and read-only data in a very cost-effective fashion. The cold and frozen data tiers use searchable snapshots to reduce your storage and operating costs.
 > 
 > Searchable snapshots eliminate the need for replica shards, potentially halving the local storage needed to search your data. Searchable snapshots rely on the same snapshot mechanism you already use for backups and have minimal impact on your snapshot repository storage costs.
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/ilm-searchable-snapshot.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ilm-searchable-snapshot.html
 Well worth watching: https://www.youtube.com/watch?v=nN6JNP9i3qQ
 
 :question:  Create a searchable snapshot of the Kibana eCommerce data.
@@ -531,8 +526,7 @@ GET _snapshot/my_snapshots/ecomm*
 
 This is the Pièce de résistance - the snapshot is `mounted` in local shared cache.
 
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/searchable-snapshots-api-mount-snapshot.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/searchable-snapshots-api-mount-snapshot.html
 ```json
 POST _snapshot/my_snapshots/ecomm-snapshot-2021.10.07/_mount?storage=shared_cache
 {
@@ -559,9 +553,7 @@ GET mounted-ecomm/_search
 ```
 
 ## clean up
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/searchable-snapshots-api-clear-cache.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/searchable-snapshots-api-clear-cache.html
 clear the cache
 ```json
 POST /mounted-ecomm/_searchable_snapshots/cache/clear
@@ -579,9 +571,7 @@ DELETE mounted-ecomm
 
 
 # Configure a cluster for cross cluster search
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/modules-cross-cluster-search.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/modules-cross-cluster-search.html
 ## Update the cluster settings with the seed node of each remote cluster
 
 ```json
@@ -681,9 +671,7 @@ GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
 Here we search the local cluster and two remote clusters.
 
 # Implement cross-cluster replication
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/xpack-ccr.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/xpack-ccr.html
 > With cross-cluster replication, you can replicate indices across clusters to:
 >
 > - Continue handling search requests in the event of a datacenter outage
@@ -693,8 +681,9 @@ https://www.elastic.co/guide/en/elasticsearch/reference/7.13/xpack-ccr.html
 > Cross-cluster replication uses an active-passive model. You index to a leader index, and the data is replicated to one or more read-only follower indices. Before you can add a follower index to a cluster, you must configure the remote cluster that contains the leader index.
 
 This is a heavily involved process - follow this link - with the guidelines below
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/ccr-getting-started.html
-
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ccr-getting-started.html (reference to the following)
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/ccr-getting-started-tutorial.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/remote-clusters-connect.html  
 :question: Replicate `kibana_sample_data_ecommerce` from the `east` cluster to the `west cluster`
 
 <details>
@@ -893,10 +882,8 @@ Error message:
 <details>
   <summary>View Solution (click to reveal)</summary>
 
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/built-in-roles.html
-
-https://www.elastic.co/guide/en/elasticsearch/reference/7.13/security-privileges.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/built-in-roles.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/security-privileges.html
 
 ```json
 PUT _security/role/flights_all
