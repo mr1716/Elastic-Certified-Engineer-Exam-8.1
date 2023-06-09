@@ -15,4 +15,4 @@ https://www.youtube.com/watch?v=dzo_uR3IsbQ
 1) Exam Fee is: $400
 2) The exam lasts 3 hours. This 3 hours starts when you start the exam. The exam does NOT begin when you join the proctored exam session. It begins when you see the screen to login and start the exam. See the youtube video for more information around this.
 3) Retakes occur 2 weeks after failing the last attempt.
-4) All of the questions and topics can be solved using the APIs. There are some items that can be resolved using the UI (user interface) as well, such as creating an ILM policy for example. But everything the UI can do, the API can do. And the entire examc an be done in the API.
+4) All of the questions and topics can be solved using the APIs. There are some items that can be resolved using the UI (user interface) in addition to or rather than using the APIs, such as creating an ILM policy for example. But everything the UI can do, the API can do. And the entire examc an be done in the API.
