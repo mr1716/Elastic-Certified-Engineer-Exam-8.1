@@ -1,4 +1,21 @@
-# The goal of this is to combine what the documentation has 
+# A Unified Example
+## Goal
+The goal of this is to provide a unified and easy example for someone to go through and be able to study for the Elasticsearch Engineer exam using unified data.
+
+## Getting Started
+### Environment Setup
+
+### Uplaoding The File/Data
+The file named solar_eclipse_2024.json has the data.
+
+## What this doesnt cover:
+1) Write and execute a query that searches across multiple clusters
+2) Write and execute a search that utilizes a runtime field
+3) Configure a cluster for cross cluster search
+4) Implement cross-cluster replication
+
+## What this does cover:
+Everything else on the topic list for the 8.1 exam as of June 15th, 2023.
 
 Define an index that satisfies a given set of requirements:
 ```json
@@ -1061,3 +1078,8 @@ GET henry4_r/_search?filter_path=*.*.*.name
 
 </details>
 <hr/>
+
+# Cluster Management 
+## Diagnose shard issues and repair a cluster's health 
+## Backup and restore a cluster and/or specific indices 
+## Configure a snapshot to be searchable 
