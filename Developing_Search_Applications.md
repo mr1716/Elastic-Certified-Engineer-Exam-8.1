@@ -145,7 +145,7 @@ GET accounts-all/_count
 
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/indices-aliases.html
 
-1. check that the feild you want to filter is a keyword
+1. check that the field you want to filter is a keyword
 
 ```json
 GET accounts-raw/_mapping/field/gender
