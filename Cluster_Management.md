@@ -824,7 +824,7 @@ GET follower-test-ccr-index-000000/_search
 
 </details>
 <hr>
-
+# Bonus below! Not part of the 8.1 exam topics!
 # Define role-based access control using Elasticsearch Security
 
 >  :warning: :warning: :warning: IMPORTANT NOTE: from here on it is assumed you have a working kibana node to work from the "development console" and that you have imported the sample data.
