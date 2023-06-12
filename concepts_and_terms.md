@@ -1,4 +1,5 @@
-# This document will attempt to provide some clarity on concepts and terms that are found on the exam. This isnt in any particular order
+# Attempts to provide some clarity on concepts and terms that are found on the exam.
+This isnt in any particular order
 
 ## Sub-Aggregations
 These allow you to embed aggregations inside other aggregations.<br>
@@ -17,8 +18,10 @@ Bucket aggregations don’t calculate metrics over fields like the metrics aggre
 What is an index and index template? What is difference between the 2, when would use 1 vs the other, and benefits of 1 vs the other!
 
 ## Dynamic Template
+These allow you greater control of how Elasticsearch maps your data beyond the default dynamic field mapping rules. You enable dynamic mapping by setting the dynamic parameter to true or runtime. You can then use dynamic templates to define custom mappings that can be applied to dynamically added fields based on the matching condition
 
 ## Index Lifecycle Management
+You can configure index lifecycle management (ILM) policies to automatically manage indices according to your performance, resiliency, and retention requirements.
 
 ## Analyzer
 
