@@ -26,9 +26,9 @@ PUT broken_index/_doc/1
       
 ```
 
-## Check health
+## Check Health
 
-:question: Check the Cluster health
+:question: Check The Cluster Health
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -72,7 +72,7 @@ epoch      timestamp cluster         status node.total node.data shards pri relo
 </details>
 <hr>
 
-## Find broken indices
+## Find Broken Indices
 
 index health usually matches the cluster health
 
@@ -229,7 +229,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-take-snaps
 - Restore the data
 - Restore the security configuration
 
-### Version compatibility
+### Version Compatibility
 > Version compatibility refers to the underlying Lucene index compatibility. Follow the Upgrade documentation when migrating between versions.
 >
 > A snapshot contains a copy of the on-disk data structures that make up an index. This means that snapshots can only be restored to versions of Elasticsearch that can read the indices:
