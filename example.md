@@ -4,6 +4,12 @@ The goal of this is to provide a unified and easy example for someone to go thro
 
 ## Getting Started
 ### Environment Setup
+To setup the environment, install the version of Elasticsearch that the exam requires. This is version 8.1. There are 2 ways to configure your environment, with each method having their own benefits.
+1) Docker
+The docker instance for 8.1.0 can be found at: https://hub.docker.com/layers/library/elasticsearch/8.1.0/images/sha256-cb74057b1647351b128a4417510c6ce398d8e5d5db16be2bc305fbafaf2f4a87?context=explore
+
+2) Manually Install
+
 
 ### Uplaoding The File/Data
 The file named solar_eclipse_2024.json has the data.
@@ -17,6 +23,7 @@ The file named solar_eclipse_2024.json has the data.
 ## What this does cover:
 Everything else on the topic list for the 8.1 exam as of June 15th, 2023.
 
+## Example:
 Define an index that satisfies a given set of requirements:
 ```json
   PUT totality_2024-raw
@@ -50,21 +57,20 @@ PUT _template/totality_2024-tmpl
     "totality_seconds" :  { "type": "integer" },
     "start_time_hour" :  { "type": "text" },
     "start_time_minute" :  { "type": "text", "fields": { "keyword": { "type": "keyword"} } },
-    "email" :  { "type": "keyword" },
     "city" :  { "type": "keyword" },
-    "state" :  { "type": "keyword" }
+    "zip_code" :  { "type": "keyword" }
     }
   }
 }
 ```
 
-To do:
+## To do:
 Define and use a dynamic template that satisfies a given set of requirements
 Define an Index Lifecycle Management policy for a time-series index
 Define an index template that creates a new data stream
 
 --------------------------------------
-Write and execute a search query for terms and/or phrases in one or more fields of an index
+## Write and execute a search query for terms and/or phrases in one or more fields of an index
 
 How many times do the words National Park appear in the eclipse data
 How many times do the words National and Park appear in the eclipse data
