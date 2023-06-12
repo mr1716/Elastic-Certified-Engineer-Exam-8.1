@@ -49,16 +49,17 @@ PUT _template/totality_2024-tmpl
       "enabled": false
     },
     "properties": {
+    "name" :  { "type": "keyword" },
     "street_address" :  { "type": "keyword" },
+    "city" :  { "type": "keyword" },    
     "state_code" :  { "type": "keyword" },
     "state" :  { "type": "keyword" },
+    "zip_code" :  { "type": "keyword" }    
     "coverage" :  { "type": "keyword" },
     "totality_minutes" :  { "type": "integer" },
     "totality_seconds" :  { "type": "integer" },
     "start_time_hour" :  { "type": "text" },
     "start_time_minute" :  { "type": "text", "fields": { "keyword": { "type": "keyword"} } },
-    "city" :  { "type": "keyword" },
-    "zip_code" :  { "type": "keyword" }
     }
   }
 }
