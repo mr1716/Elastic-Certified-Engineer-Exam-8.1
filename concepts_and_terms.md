@@ -24,6 +24,14 @@ These allow you greater control of how Elasticsearch maps your data beyond the d
 You can configure index lifecycle management (ILM) policies to automatically manage indices according to your performance, resiliency, and retention requirements.
 
 ## Analyzer
+Video on subject to help with understanding: https://www.youtube.com/watch?v=pEV4yNlD5wI <br>
+For more information about what makes up an analyzer, check out this article on the anatomy of an analyzer: https://www.elastic.co/guide/en/elasticsearch/reference/current/analyzer-anatomy.html <br>
+Analyzers perform the text analysis for Elasticsearch. Analyzers are a set of rules that govern the entire process. <br>
+If you want to tailor your search experience, you can choose a different built-in analyzer or even configure a custom one. A custom analyzer gives you control over each step of the analysis process, including: <br>
+
+- Changes to the text before tokenization <br>
+- How text is converted to tokens <br>
+- Normalization changes made to tokens before indexing or search <br> 
 
 ## Data Stream
 A data stream lets you store append-only time series data across multiple indices while giving you a single named resource for requests. Data streams are well-suited for logs, events, metrics, and other continuously generated data.
