@@ -1,7 +1,7 @@
 https://www.elastic.co/guide/en/elasticsearch/reference/current/data-management.html
 
 # Define an index that satisfies a given set of requirements 
-https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html <br>
 Example:
 ```json
   PUT accounts-raw
