@@ -49,10 +49,10 @@ PUT _template/totality_2024-tmpl
       "enabled": false
     },
     "properties": {
-    "address" : { "type": "integer" },
-    "street_address" :  { "type": "integer" },
+    "street_address" :  { "type": "keyword" },
     "state_code" :  { "type": "keyword" },
     "state" :  { "type": "keyword" },
+    "coverage" :  { "type": "keyword" },
     "totality_minutes" :  { "type": "integer" },
     "totality_seconds" :  { "type": "integer" },
     "start_time_hour" :  { "type": "text" },
