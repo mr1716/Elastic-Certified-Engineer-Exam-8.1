@@ -5,11 +5,11 @@ The goal of this is to provide a unified and easy example for someone to go thro
 ## Getting Started
 ### Environment Setup
 To setup the environment, install the version of Elasticsearch that the exam requires. This is version 8.1. There are 2 ways to configure your environment, with each method having their own benefits.
-1) Docker
+1) Docker: <br>
 The docker instance for 8.1.0 can be found at: https://hub.docker.com/layers/library/elasticsearch/8.1.0/images/sha256-cb74057b1647351b128a4417510c6ce398d8e5d5db16be2bc305fbafaf2f4a87?context=explore
 
-2) Manually Install
-
+2) Manually Install <br>
+To install Elasticsearch on a system such as VM or laptop or desktop, download the release from Elasticsearch, ensure that the required version of Java and other required software dependencies are installed, and then install and start Elasticsearch. https://www.elastic.co/downloads/past-releases/elasticsearch-8-1-0
 
 ### Uplaoding The File/Data
 The file named solar_eclipse_2024.json has the data.
