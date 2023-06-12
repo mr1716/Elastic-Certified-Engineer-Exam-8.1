@@ -803,6 +803,7 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 
 </details>
 <hr>
+
 # Write and execute a query that searches across multiple clusters
 
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-search.html
