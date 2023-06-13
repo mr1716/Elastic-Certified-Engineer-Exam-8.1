@@ -68,8 +68,9 @@ PUT _template/totality_2024-tmpl
     "eclipse_date" :  { "type": "date" },
     "totality_minutes" :  { "type": "integer" },
     "totality_seconds" :  { "type": "integer" },
-    "start_time_hour" :  { "type": "text" },
-    "start_time_minute" :  { "type": "text", "fields": { "keyword": { "type": "keyword"} } },
+    "start_time" :  { "type": "text" },
+    "max_time" :  { "type": "text" },
+    "end_time" :  { "type": "text" }
     }
   }
 }
