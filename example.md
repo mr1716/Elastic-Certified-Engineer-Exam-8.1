@@ -11,19 +11,26 @@ The docker instance for 8.1.0 can be found at: https://hub.docker.com/layers/lib
 2) Manually Install <br>
 To install Elasticsearch on a system such as VM or laptop or desktop, download the release from Elasticsearch, ensure that the required version of Java and other required software dependencies are installed, and then install and start Elasticsearch. https://www.elastic.co/downloads/past-releases/elasticsearch-8-1-0
 
-### Uplaoding The File/Data
+### Uploading The File/Data
 The file named solar_eclipse_2024.json has the data.
 
-## What this doesnt cover:
-1) Write and execute a query that searches across multiple clusters
+## What this doesnt explicitly cover:
 2) Configure a cluster for cross cluster search
 3) Implement cross-cluster replication
 
+## Notes:
+This shows an example for how to "Write and execute a query that searches across multiple clusters" but this doesnt actually 
 ## What this does cover:
 Everything else on the topic list for the 8.1 exam as of June 15th, 2023.
 
 ## Lets Get Started:
 This example will walk you through the majority of the Elasticsearch Certified Engineer Exam using some 2024 solar eclipse totality information for state parks.
+
+Steps:
+1) We will define an index, then an index template
+2) Upload the data
+3) Check the cluster health and configure cluster restore
+4) 
 
 ### Define an index that satisfies a given set of requirements
 Insert explanation here
@@ -59,6 +66,7 @@ PUT _template/totality_2024-tmpl
     "state" :  { "type": "keyword" },
     "zip_code" :  { "type": "keyword" }    
     "coverage" :  { "type": "keyword" },
+    "eclipse_date" :  { "type": "date" },
     "totality_minutes" :  { "type": "integer" },
     "totality_seconds" :  { "type": "integer" },
     "start_time_hour" :  { "type": "text" },
@@ -67,6 +75,7 @@ PUT _template/totality_2024-tmpl
   }
 }
 ```
+
 ### Lets Upload The Data
 
 ### Cluster Management
@@ -108,6 +117,8 @@ GET _cat/shards/broken_index?v&s=index
 ### Repair
 Repairing an index can be done in many ways such as reducing the number of replicas required. This would be done to matche the number of replia nodes available. In the event that a single node cluster is running, the number of replicas can be set to 0. 
 
+This might not need to be repaired, but if you do notice issues, here's how you would do it!
+
 ```json
 PUT /broken_index/_settings
 {
@@ -117,6 +128,7 @@ PUT /broken_index/_settings
 ```
 
 ### Backup and restore a cluster and/or specific indices 
+
 ### Configure a snapshot to be searchable 
 Searchable snapshots let you use snapshots to search infrequently accessed and read-only data in a very cost-effective fashion. The cold and frozen data tiers use searchable snapshots to reduce your storage and operating costs.
 
@@ -124,55 +136,93 @@ Searchable snapshots eliminate the need for replica shards, potentially halving 
 ```json
 xpack.searchable.snapshot.shared_cache.size=100mb
 ```
+### Asynchronous Search
+-Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
 
-### Define and use a dynamic template that satisfies a given set of requirements 
+Write an asynchronous search to sort by timestamp:
+```json
 
-### Define an Index Lifecycle Management policy for a time-series index 
-<b> This isnt necessarily specific to this but is inportant to setup</b>
-Example from Rich Raposa (Elastic Exam video):<br>
-  the corresponding index template is called task3<br>
-  the data is hot for 3 minutes, then immediately rolls over to warm<br>
-  the data is then warm for 5 minutes, then rolls over to cold<br>
-  10 minutes after rolling over, the data is deleted<br>
+POST /{insert index here}/_async_search?size=0
+{
+  "sort": [
+    { "@timestamp": { "order": "asc" } }
+  ],
+  "aggs": {
+    "sale_date": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "calendar_interval": "1d"
+      }
+    }
+  }
+}
+```
+
+### Get Asynchronous Search Details
+```json
+GET /_async_search/{id}=
+```
+
+### Get Asynchronous Search Status
+```json
+GET /_async_search/status/{id}
+```
+
+### Delete An Asynchronous Search
+```json
+DELETE /_async_search/{id}
+```
+
+
+### Define and use index aliases
+### part 1
+
+:question: Define an index alias for `totality-raw` called `totality-all`
 
 ```json
-PUT _ilm/policy/task3
+POST /_aliases
 {
-  "policy": {
-    "phases": {
-      "hot": {
-        "min_age": "0ms",
-        "actions": {
-          "rollover": {
-            "max_primary_shard_size": "50gb",
-            "max_age": "3m"
-          },
-          "set_priority": {
-            "priority": 100
-          }
-        }
-      },
-      "warm": {
-        "min_age": "0m",
-        "actions": {
-          "set_priority": {
-            "priority": 50
-          }
-        }
-      },
-      "cold": {
-        "min_age": "5m",
-        "actions": {
-          "set_priority": {
-            "priority": 0
-          }
-        }
-      },
-      "delete": {
-        "min_age": "10m",
-        "actions": {
-          "delete": {
-            "delete_searchable_snapshot": true
+  "actions": [
+    {
+      "add": {
+        "index": "totality-raw",
+        "alias": "totality-all"
+      }
+    }
+  ]
+}
+```
+
+To verify: <br>
+Check that the document count matches using GET totality-all/_count
+
+### part 2
+
+:question: Define an index alias for `accounts-raw` called `accounts-male`
+
+:question: Apply a filter to only show the male account owners.
+
+1. check that the field you want to filter is a keyword
+
+```json
+GET accounts-raw/_mapping/field/gender
+
+// Output 
+
+{
+  "accounts-raw" : {
+    "mappings" : {
+      "gender" : {
+        "full_name" : "gender",
+        "mapping" : {
+          "gender" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
           }
         }
       }
@@ -181,179 +231,256 @@ PUT _ilm/policy/task3
 }
 ```
 
-### Define an index template that creates a new data stream 
-<b> Create ILM template </b>
+2. apply the alias with the filter
 
-As far as i can tell ILM cron runs every 5-10mins.  So doing anything less than this does not work
+**Hint**: you need to use the `.keyword` field here, or you will get zero results.
 
 ```json
-PUT _ilm/policy/test-ilm
+POST /_aliases
 {
-  "policy": {
-    "phases": {
-      "hot": {
-        "min_age": "0ms",
-        "actions": {
-          "rollover": {
-            "max_primary_shard_size": "50gb",
-            "max_age": "5m"
-          },
-          "set_priority": {
-            "priority": 100
-          }
-        }
-      },
-      "warm": {
-        "min_age": "10m",
-        "actions": {
-          "set_priority": {
-            "priority": 50
-          }
-        }
-      },
-      "cold": {
-        "min_age": "15m",
-        "actions": {
-          "set_priority": {
-            "priority": 0
-          }
-        }
-      },
-      "delete": {
-        "min_age": "30m",
-        "actions": {
-          "delete": {
-            "delete_searchable_snapshot": true
+  "actions": [
+    {
+      "add": {
+        "index": "accounts-raw",
+        "alias": "accounts-male",
+        "filter": {
+          "term": {
+            "gender.keyword": "M"
           }
         }
       }
     }
+  ]
+}
+```
+
+3. test
+
+```json
+GET accounts-male/_count
+
+// Output 
+
+{
+  "count" : 507,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
   }
 }
 ```
 
-<b> Create an index template (not a data_stream) </b>
+4. :question: BONUS: Run a query to do the same on `accounts-raw` index
+
+Extra bonus: only print the total hits
 
 ```json
-PUT _index_template/test-ilm-tmpl
+POST accounts-raw/_search?filter_path=hits.total.value
 {
-  "template": {
-    "settings": {
-      "index": {
-        "number_of_shards": 1,
-        "number_of_replicas" : 0,
-        "lifecycle": {
-          "name": "test-ilm",
-          "rollover_alias": "test-index"
-        }
-      }
-    },
-    "mappings": {
-      "properties": {
-        "@timestamp": {
-          "type": "date"
-        },
-        "field": {
-          "type": "text"
-        }
+  "query": {
+    "match": {
+      "gender": "M"
+    }
+  }
+}
+
+// Output 
+
+{
+  "hits" : {
+    "total" : {
+      "value" : 507
+    }
+  }
+}
+```
+</details>
+<hr> 
+
+## Use the Reindex API and Update By Query API to reindex and/or update documents
+
+### Part 1
+:question: Reindex the `totality-raw` index into `totality-state-parks`.
+:question: Then reindex `totality-state-parks` into `totality-full` index where only the state parks that have 100% totality coverage are present.
+
+> :warning: 
+Reindex requires _source to be enabled for all documents in the source index.
+
+:warning: check your templates, to make sure they are not forcing `"_source": { "enabled": false },` as this will break reindexing.
+
+```json
+POST _reindex
+{
+  "source": { "index": "totality-raw"  },
+  "dest":   { "index": "totality-state-parks" }
+}
+
+GET totality-state-parks/_count?filter_path=count
+
+// Output 
+
+{
+  "count" : 1000
+}
+```
+
+reindex into `totality-full`
+
+:bulb: do the term query first, then once you are happy with the output, convert it into a `_reindex`
+
+```json
+POST _reindex
+{
+  "source": { "index": "totality-state-parks",
+    "query": {
+      "term": {
+        "gender.keyword": "F"
       }
     }
   },
-  "index_patterns": [
-    "test-index-*"
-  ],
-  "composed_of": []
+  "dest":   { "index": "totality-full" }
 }
 ```
 
-<b> Bootstrap the initial index </b>
-:bulb: This is very important - do this before data ingest
-
-
-:bulb: Needs to have the aliases added or it won't work!
-
+Check
 ```json
-PUT test-index-000000
+GET accounts-female/_count?filter_path=count
+
+// Output 
+
 {
-  "aliases": {
-    "test-index": {
-      "is_write_index": true
+  "count" : ??
+}
+```
+
+Check again (fix this later)
+```json
+GET /totality-state-parks/_search?filter_path=*.*.*.gender
+
+// Output 
+
+{
+  "hits" : {
+    "hits" : [
+      {
+        "_source" : {
+          "gender" : "F"
+        }
+      },
+      {
+        "_source" : {
+          "gender" : "F"
+        }
+      },
+    ...
+```
+</details>
+
+### Part 2
+:question: Give all female account holders in `accounts-2021` a 25% bonus increase on their balance :)
+
+<details>
+  <summary>View Solution (click to reveal)</summary>
+
+Get two example docs
+```json
+GET /accounts-raw/_search?q=gender:F&size=2
+```
+
+Note down those ids and get the balances
+```json
+GET /accounts-raw/_doc/_mget?filter_path=*.*.balance
+{
+    "ids" : ["13", "25"]
+}
+
+//Output
+
+{
+  "docs" : [
+    {
+      "_source" : {
+        "balance" : 32838
+      }
+    },
+    {
+      "_source" : {
+        "balance" : 40540
+      }
+    }
+  ]
+}
+```
+
+Update the accounts - take note of the number of `updated` docs
+```json
+POST accounts-2021/_update_by_query
+{
+  "script": {
+    "source": "ctx._source.balance=ctx._source.balance*1.25",
+    "lang": "painless"
+  },
+  "query": {
+    "term": {
+      "gender": "F"
     }
   }
 }
-```
 
 
-<b> Add a doc or two </b>
-
-```json
-PUT test-index/_doc/1
-{
-  "@timestamp" : "2021-10-04T16:26:00.000Z",
-  "field":"test data"
-}
-
-PUT test-index/_doc/2
-{
-  "@timestamp" : "2021-10-04T16:58:00.000Z",
-  "field":"test data"
-}
-```
-
-<b> Check index </b>
-
-```json
-GET test-index-000000
-```
-
-### Check alias
-
-```json
-GET test-index
-```
-
-### View ILM phase for each index (rinse and repeat here)
-
-At this point you will have indicies being created and rotated
-keep requerying this and see that they are.
-
-```json
-GET test-index/_ilm/explain?filter_path=*.*.age,*.*.phase
-```
-
-### Results
-
-So, importantly what you can see here is that the index is rolled over at 5-ish minutes.
-
-Then, each move to a new phase is from that initial rollover (at 5-ish minutes)
-
-You can also see that no time is exact.  So days/hours are a better time frame than minutes in production. (at least ths is what i saw).
-
-```json
-// output 
+// Output
 
 {
-  "indices" : {
-    "test-index-000003" : {
-      "age" : "39.65m",
-      "phase" : "delete"
-    },
-    "test-index-000004" : {
-      "age" : "29.64m",
-      "phase" : "cold"
-    },
-    "test-index-000005" : {
-      "age" : "19.65m",
-      "phase" : "warm"
-    },
-    "test-index-000006" : {
-      "age" : "9.65m",
-      "phase" : "hot"
-    },
-  }
+  "took" : 369,
+  "timed_out" : false,
+  "total" : 493,
+  "updated" : 493,
+  "deleted" : 0,
+  "batches" : 1,
+  "version_conflicts" : 0,
+  "noops" : 0,
+  "retries" : {
+    "bulk" : 0,
+    "search" : 0
+  },
+  "throttled_millis" : 0,
+  "requests_per_second" : -1.0,
+  "throttled_until_millis" : 0,
+  "failures" : [ ]
 }
 ```
---------------------------------------
+
+Get those same ids again to check the balances have increased
+```json
+GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
+{
+    "ids" : ["13", "25"]
+}
+
+// Output
+
+{
+  "docs" : [
+    {
+      "_source" : {
+        "balance" : 41047.5
+      }
+    },
+    {
+      "_source" : {
+        "balance" : 50675.0
+      }
+    }
+  ]
+}
+```
+
+</details>
+<hr>
+
+
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
 
 How many times do the words New Hanpshire appear in the eclipse data
@@ -481,44 +608,11 @@ GET shakespeare/_search
 - Other searches include but are not limited to:
 How many states are in totality (count unique state field)
 
-### Asynchronous Search
--Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
-
-Write an asynchronous search to sort by timestamp:
-```json
-
-POST /{insert index here}/_async_search?size=0
-{
-  "sort": [
-    { "@timestamp": { "order": "asc" } }
-  ],
-  "aggs": {
-    "sale_date": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "calendar_interval": "1d"
-      }
-    }
-  }
-}
-```
-
-### Get Asynchronous Search Details
-```json
-GET /_async_search/{id}=
-```
-
-### Get Asynchronous Search Status
-```json
-GET /_async_search/status/{id}
-```
-
-### Delete An Asynchronous Search
-```json
-DELETE /_async_search/{id}
-```
 
 ### Write and execute metric and bucket aggregations
+What we will do is use the index aliases and created indexes so far to perform aggregations!
+
+### Metric Aggregations
 
 Pull the number of sales, Max, Min, Average and total sales for the American customers.
 ```json
@@ -539,8 +633,16 @@ GET {solar eclipse}/_search?filter_path=aggregations
   }
 }
 ```
+This isnt an exhaustive or exclusive list as there are opportunities for metric aggregations that arent listed below plus there are metric aggregations that cannot apply to this data. Be aware that they exist and understand where the documentation is so if questioned, you know where to find. <br>
+Other bucket aggregations applicable to this data include: <br>
+- Average totality time
+- Maximum totality time
+- Stats about totality time
+- Sum of totality time
+- Min totality time
+
 ### Bucket Aggregations
-Display number of sales per day
+Display number of sites per state
 ```json
 GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 {
@@ -556,9 +658,87 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
   }
 }
 ```
+This isnt an exhaustive or exclusive list as there are opportunities for bucket aggregations that arent listed below plus there are bucket aggregations that cannot apply to this data. Be aware that they exist and understand where the documentation is so if questioned, you know where to find. <br>
+Other bucket aggregations applicable to this data include: <br>
+- Date Range for totality starting
+- Date Range for totality ending
+- Date Range for totality maximum
+- Range Aggregation For Zip Code
+- Range Aggregation For Totality Time
+- Filter based upon Zip Code
+- Filter based upon totality minutes
+- Filter based upon coverage
 
 ### Write and execute aggregations that contain sub-aggregations
+Display total totality minutes broken down by state
+- The date_histogram is the Y-axis
+- Then you need to group by category
+- Then Sum the sales (X-axis)
 
+Basially here, you create each aggregation separately and then combine in the end.
+
+Date histogram for the totality start times
+```json
+GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
+{
+  "size":0,
+  "aggs": {
+    "date_hist_y_axis": {
+      "date_histogram": {
+        "field": "eclipse_date",
+        "calendar_interval": "1m",
+        "min_doc_count": 1
+      }
+    }
+  }
+}
+```
+Sub-Aggregate by State grouping:
+```json
+GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
+{
+  "size": 0,
+  "aggs": {
+    "cat_keyword": {
+      "terms": {
+        "field": "state.keyword"
+      }
+    }
+  }
+}
+```
+
+Putting all together:
+```json
+GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
+{
+  "size":0,
+  "aggs": {
+    "date_hist_y_axis": {
+      "date_histogram": {
+        "field": "eclipse_date",
+        "calendar_interval": "1m",
+        "min_doc_count": 1
+      },
+      "aggs": {
+        "group_by_category": {
+          "terms": {
+            "field": "state.keyword",
+            "size": 8
+          },
+          "aggs": {
+            "total_sales_price": {
+              "sum": {
+                "field": "totality_minutes"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
 ### Developing Search Applications
 ### Highlight the search terms in the response of a query
 In the New Hampshire parks, highlight the Name starting the highlight with "#aaa# and ending it with #bbb#
@@ -635,134 +815,10 @@ GET ny_parks_index,remote_cluster1:nh_parks_index,remote_cluster2:tx_parks_index
 }
 '''
 
-### Define and use index aliases
-### part 1
-
-:question: Define an index alias for `totality-raw` called `totality-all`
-
-```json
-POST /_aliases
-{
-  "actions": [
-    {
-      "add": {
-        "index": "totality-raw",
-        "alias": "totality-all"
-      }
-    }
-  ]
-}
-```
-
-To verify: <br>
-Check that the document count matches using GET totality-all/_count
-
-### part 2
-
-:question: Define an index alias for `accounts-raw` called `accounts-male`
-
-:question: Apply a filter to only show the male account owners.
-
-1. check that the field you want to filter is a keyword
-
-```json
-GET accounts-raw/_mapping/field/gender
-
-// Output 
-
-{
-  "accounts-raw" : {
-    "mappings" : {
-      "gender" : {
-        "full_name" : "gender",
-        "mapping" : {
-          "gender" : {
-            "type" : "text",
-            "fields" : {
-              "keyword" : {
-                "type" : "keyword",
-                "ignore_above" : 256
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-2. apply the alias with the filter
-
-**Hint**: you need to use the `.keyword` field here, or you will get zero results.
-
-```json
-POST /_aliases
-{
-  "actions": [
-    {
-      "add": {
-        "index": "accounts-raw",
-        "alias": "accounts-male",
-        "filter": {
-          "term": {
-            "gender.keyword": "M"
-          }
-        }
-      }
-    }
-  ]
-}
-```
-
-3. test
-
-```json
-GET accounts-male/_count
-
-// Output 
-
-{
-  "count" : 507,
-  "_shards" : {
-    "total" : 1,
-    "successful" : 1,
-    "skipped" : 0,
-    "failed" : 0
-  }
-}
-```
-
-4. :question: BONUS: Run a query to do the same on `accounts-raw` index
-
-Extra bonus: only print the total hits
-
-```json
-POST accounts-raw/_search?filter_path=hits.total.value
-{
-  "query": {
-    "match": {
-      "gender": "M"
-    }
-  }
-}
-
-// Output 
-
-{
-  "hits" : {
-    "total" : {
-      "value" : 507
-    }
-  }
-}
-```
-</details>
-<hr>
-
 ### Define and use a search template
 
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-template.html
+A search template is a stored search you can run with different variables.
+
 
 :question: Create and use a search template that returns the lines of a person in a play.
 
@@ -1134,186 +1190,6 @@ GET henry4_hal/_search
 <hr/>
 
 
-## Use the Reindex API and Update By Query API to reindex and/or update documents
-
-### Part 1
-:question: Reindex the `totality-raw` index into `totality-state-parks`.
-:question: Then reindex `totality-state-parks` into `totality-full` index where only the state parks that have 100% totality coverage are present.
-
-> :warning: 
-Reindex requires _source to be enabled for all documents in the source index.
-
-:warning: check your templates, to make sure they are not forcing `"_source": { "enabled": false },` as this will break reindexing.
-
-```json
-POST _reindex
-{
-  "source": { "index": "totality-raw"  },
-  "dest":   { "index": "totality-state-parks" }
-}
-
-GET totality-state-parks/_count?filter_path=count
-
-// Output 
-
-{
-  "count" : 1000
-}
-```
-
-reindex into `totality-full`
-
-:bulb: do the term query first, then once you are happy with the output, convert it into a `_reindex`
-
-```json
-POST _reindex
-{
-  "source": { "index": "totality-state-parks",
-    "query": {
-      "term": {
-        "gender.keyword": "F"
-      }
-    }
-  },
-  "dest":   { "index": "totality-full" }
-}
-```
-
-Check
-```json
-GET accounts-female/_count?filter_path=count
-
-// Output 
-
-{
-  "count" : ??
-}
-```
-
-Check again (fix this later)
-```json
-GET /totality-state-parks/_search?filter_path=*.*.*.gender
-
-// Output 
-
-{
-  "hits" : {
-    "hits" : [
-      {
-        "_source" : {
-          "gender" : "F"
-        }
-      },
-      {
-        "_source" : {
-          "gender" : "F"
-        }
-      },
-    ...
-```
-</details>
-
-### Part 2
-:question: Give all female account holders in `accounts-2021` a 25% bonus increase on their balance :)
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-Get two example docs
-```json
-GET /accounts-raw/_search?q=gender:F&size=2
-```
-
-Note down those ids and get the balances
-```json
-GET /accounts-raw/_doc/_mget?filter_path=*.*.balance
-{
-    "ids" : ["13", "25"]
-}
-
-//Output
-
-{
-  "docs" : [
-    {
-      "_source" : {
-        "balance" : 32838
-      }
-    },
-    {
-      "_source" : {
-        "balance" : 40540
-      }
-    }
-  ]
-}
-```
-
-Update the accounts - take note of the number of `updated` docs
-```json
-POST accounts-2021/_update_by_query
-{
-  "script": {
-    "source": "ctx._source.balance=ctx._source.balance*1.25",
-    "lang": "painless"
-  },
-  "query": {
-    "term": {
-      "gender": "F"
-    }
-  }
-}
-
-
-// Output
-
-{
-  "took" : 369,
-  "timed_out" : false,
-  "total" : 493,
-  "updated" : 493,
-  "deleted" : 0,
-  "batches" : 1,
-  "version_conflicts" : 0,
-  "noops" : 0,
-  "retries" : {
-    "bulk" : 0,
-    "search" : 0
-  },
-  "throttled_millis" : 0,
-  "requests_per_second" : -1.0,
-  "throttled_until_millis" : 0,
-  "failures" : [ ]
-}
-```
-
-Get those same ids again to check the balances have increased
-```json
-GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
-{
-    "ids" : ["13", "25"]
-}
-
-// Output
-
-{
-  "docs" : [
-    {
-      "_source" : {
-        "balance" : 41047.5
-      }
-    },
-    {
-      "_source" : {
-        "balance" : 50675.0
-      }
-    }
-  ]
-}
-```
-
-</details>
-<hr>
 
 ## Define and use an ingest pipeline that satisfies a given set of requirements, including the use of Painless to modify documents
 :question: Apply a pipeline called `longest-time` to the data in `state-parks` with the following requirements:
@@ -1647,3 +1523,230 @@ GET henry4_r/_search?filter_path=*.*.*.name
 
 </details>
 <hr/>
+### Define an Index Lifecycle Management policy for a time-series index 
+<b> This isnt necessarily specific to this but is inportant to setup</b>
+Example from Rich Raposa (Elastic Exam video):<br>
+  the corresponding index template is called task3<br>
+  the data is hot for 3 minutes, then immediately rolls over to warm<br>
+  the data is then warm for 5 minutes, then rolls over to cold<br>
+  10 minutes after rolling over, the data is deleted<br>
+
+```json
+PUT _ilm/policy/task3
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "rollover": {
+            "max_primary_shard_size": "50gb",
+            "max_age": "3m"
+          },
+          "set_priority": {
+            "priority": 100
+          }
+        }
+      },
+      "warm": {
+        "min_age": "0m",
+        "actions": {
+          "set_priority": {
+            "priority": 50
+          }
+        }
+      },
+      "cold": {
+        "min_age": "5m",
+        "actions": {
+          "set_priority": {
+            "priority": 0
+          }
+        }
+      },
+      "delete": {
+        "min_age": "10m",
+        "actions": {
+          "delete": {
+            "delete_searchable_snapshot": true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Define an index template that creates a new data stream 
+<b> Create ILM template </b>
+
+As far as i can tell ILM cron runs every 5-10mins.  So doing anything less than this does not work
+
+```json
+PUT _ilm/policy/test-ilm
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "rollover": {
+            "max_primary_shard_size": "50gb",
+            "max_age": "5m"
+          },
+          "set_priority": {
+            "priority": 100
+          }
+        }
+      },
+      "warm": {
+        "min_age": "10m",
+        "actions": {
+          "set_priority": {
+            "priority": 50
+          }
+        }
+      },
+      "cold": {
+        "min_age": "15m",
+        "actions": {
+          "set_priority": {
+            "priority": 0
+          }
+        }
+      },
+      "delete": {
+        "min_age": "30m",
+        "actions": {
+          "delete": {
+            "delete_searchable_snapshot": true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+<b> Create an index template (not a data_stream) </b>
+
+```json
+PUT _index_template/test-ilm-tmpl
+{
+  "template": {
+    "settings": {
+      "index": {
+        "number_of_shards": 1,
+        "number_of_replicas" : 0,
+        "lifecycle": {
+          "name": "test-ilm",
+          "rollover_alias": "test-index"
+        }
+      }
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "field": {
+          "type": "text"
+        }
+      }
+    }
+  },
+  "index_patterns": [
+    "test-index-*"
+  ],
+  "composed_of": []
+}
+```
+
+<b> Bootstrap the initial index </b>
+:bulb: This is very important - do this before data ingest
+
+
+:bulb: Needs to have the aliases added or it won't work!
+
+```json
+PUT test-index-000000
+{
+  "aliases": {
+    "test-index": {
+      "is_write_index": true
+    }
+  }
+}
+```
+
+
+<b> Add a doc or two </b>
+
+```json
+PUT test-index/_doc/1
+{
+  "@timestamp" : "2021-10-04T16:26:00.000Z",
+  "field":"test data"
+}
+
+PUT test-index/_doc/2
+{
+  "@timestamp" : "2021-10-04T16:58:00.000Z",
+  "field":"test data"
+}
+```
+
+<b> Check index </b>
+
+```json
+GET test-index-000000
+```
+
+### Check alias
+
+```json
+GET test-index
+```
+
+### View ILM phase for each index (rinse and repeat here)
+
+At this point you will have indicies being created and rotated
+keep requerying this and see that they are.
+
+```json
+GET test-index/_ilm/explain?filter_path=*.*.age,*.*.phase
+```
+
+### Results
+
+So, importantly what you can see here is that the index is rolled over at 5-ish minutes.
+
+Then, each move to a new phase is from that initial rollover (at 5-ish minutes)
+
+You can also see that no time is exact.  So days/hours are a better time frame than minutes in production. (at least ths is what i saw).
+
+```json
+// output 
+
+{
+  "indices" : {
+    "test-index-000003" : {
+      "age" : "39.65m",
+      "phase" : "delete"
+    },
+    "test-index-000004" : {
+      "age" : "29.64m",
+      "phase" : "cold"
+    },
+    "test-index-000005" : {
+      "age" : "19.65m",
+      "phase" : "warm"
+    },
+    "test-index-000006" : {
+      "age" : "9.65m",
+      "phase" : "hot"
+    },
+  }
+}
+```
+--------------------------------------
