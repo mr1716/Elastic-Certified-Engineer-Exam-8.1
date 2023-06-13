@@ -68,7 +68,7 @@ PUT _template/totality_2024-tmpl
 # Define and use a dynamic template that satisfies a given set of requirements 
 
 # Define an Index Lifecycle Management policy for a time-series index 
-
+### This isnt necessarily specific to this but is inportant to setup
 Example from Rich Raposa (Elastic Exam video):<br>
   the corresponding index template is called task3<br>
   the data is hot for 3 minutes, then immediately rolls over to warm<br>
@@ -210,7 +210,6 @@ PUT _index_template/test-ilm-tmpl
 ## Bootstrap the initial index
 :bulb: This is very important - do this before data ingest
 
-See https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-index-lifecycle-management.html#ilm-gs-alias-bootstrap
 
 :bulb: Needs to have the aliases added or it won't work!
 
@@ -300,8 +299,8 @@ You can also see that no time is exact.  So days/hours are a better time frame t
 --------------------------------------
 ## Write and execute a search query for terms and/or phrases in one or more fields of an index
 
-How many times do the words National Park appear in the eclipse data
-How many times do the words National and Park appear in the eclipse data
+How many times do the words New Hanpshire appear in the eclipse data
+How many times do the words New and Hampshire appear in the eclipse data
 ```json
 GET shakespeare/_search
 {
@@ -422,8 +421,12 @@ GET shakespeare/_search
   }
 }
 ```
+- Other searches include but are not limited to:
+How many states are in totality (count unique state field)
 
-## Asynchronous Search 
+## Asynchronous Search
+-Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
+
 Write an asynchronous search to sort by timestamp:
 ```json
 
