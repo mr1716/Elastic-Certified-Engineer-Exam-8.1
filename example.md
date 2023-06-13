@@ -62,7 +62,6 @@ PUT _template/totality_2024-tmpl
     "name" :  { "type": "keyword" },
     "street_address" :  { "type": "keyword" },
     "city" :  { "type": "keyword" },    
-    "state_code" :  { "type": "keyword" },
     "state" :  { "type": "keyword" },
     "zip_code" :  { "type": "keyword" }    
     "coverage" :  { "type": "keyword" },
@@ -75,6 +74,7 @@ PUT _template/totality_2024-tmpl
   }
 }
 ```
+### Define and use a dynamic template that satisfies a given set of requirements
 
 ### Lets Upload The Data
 
@@ -479,7 +479,445 @@ GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
 
 </details>
 <hr>
+### Write and execute a search that utilizes a runtime field
+In this instance, we will create a runtime field that will take the existing fields minutes and seconds, and turn them into a field called seconds_per_site. 
 
+Other runtime fields could include:
+- Create a field called state_code that takes the state name and abbreviates it. Such as New Hampshire to NH, and VT for Vermont. 
+
+Step 2 Perform the searcb
+It could be either:
+1) Search for fields with more than 200 seconds of converted totality time.
+2) Search for all of the state parks with the state_code of NH
+ 
+
+### Define and use an ingest pipeline that satisfies a given set of requirements, including the use of Painless to modify documents
+:question: Apply a pipeline called `longest-time` to the data in `state-parks` with the following requirements:
+
+- Add a `tag` called `pipeline_ingest` to show that the document was ingested via the pipeline 
+- Add the date field to the start, maximum, and end times to provide a full ISO time field in the format of YYYY-MM-DD... and add that to the field that it was received from
+- Calculate the amount of total seconds in totality and add it to a new field called full_totality_time 
+
+Then reindex the data with that new pipeline
+```json
+POST _ingest/pipeline/_simulate
+{
+  "pipeline": {
+    "processors": [
+      {
+        "append": {
+          "field": "tags",
+          "value": ["pipeline_ingest"]
+        }
+      },
+      {
+        "set": {
+          "tag": "set full_name",
+          "field": "full_name",
+          "value": "{{firstname}} {{lastname}}"
+        }
+      },
+      {
+        "script": {
+          "tag": "39s and over female bonus",
+          "if": """
+            if (ctx.age >= 39) { 
+              if (ctx.gender=="F") { 
+                return true 
+              }
+            } 
+            return false
+          """,
+          "lang": "painless",
+          "source": """
+            ctx.balance = ctx.balance*1.05
+          """
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_source": {
+        "account_number": 10000,
+        "balance": 1000000,
+        "firstname": "George",
+        "lastname": "Cross",
+        "age": 92,
+        "gender": "M",
+        "address": "1 Dog Lane",
+        "employer": "Wheatens",
+        "email": "george@wheatens.com",
+        "city": "London",
+        "state": "UK"
+      }
+    },
+    {
+      "_source": {
+        "account_number": 10001,
+        "balance": 1000001,
+        "firstname": "Millie",
+        "lastname": "Cross",
+        "age": 84,
+        "gender": "F",
+        "address": "1 Dog Lane",
+        "employer": "Wheatens",
+        "email": "millie@wheatens.com",
+        "city": "London",
+        "state": "UK"
+      }
+    }
+  ]
+}
+```
+
+Here you will get a lot of output, make sure it matches what you expect to see.
+
+Now copy the working pipeline
+
+```json
+PUT _ingest/pipeline/accounts-ingest
+{
+  "description" : "pipeline to account ingest",
+  "processors": [
+      {
+        "append": {
+          "field": "tags",
+          "value": ["pipeline_ingest"]
+        }
+      },
+      {
+        "set": {
+          "tag": "set full_name",
+          "field": "full_name",
+          "value": "{{firstname}} {{lastname}}"
+        }
+      },
+      {
+        "script": {
+          "tag": "39s and over female bonus",
+          "if": """
+            if (ctx.age >= 39) { 
+              if (ctx.gender=="F") { 
+                return true 
+              }
+            } 
+            return false
+          """,
+          "lang": "painless",
+          "source": """
+            ctx.balance = ctx.balance*1.05
+          """
+        }
+      }
+    ]
+}
+```
+Then reindex the data with that new pipeline
+```json
+POST accounts-2021/_update_by_query?pipeline=accounts-ingest
+```
+Checking to verify that the data was transformed properly:
+```json
+POST accounts-raw/_search?filter_path=*.*._id
+{
+  "size": 1, 
+  "query": { 
+    "bool": { 
+      "must": [
+        { "match": { "gender.keyword":   "F"}}
+      ],
+      "filter": [ 
+        { "range": { "age": { "gte": "39" }}}
+      ]
+    }
+  }
+}
+
+// Output 
+
+{
+  "hits" : {
+    "hits" : [
+      {
+        "_id" : "25"
+      }
+    ]
+  }
+}
+```
+
+###  Define a mapping that satisfies a given set of requirements
+
+### Dynamic mapping
+> Dynamic mapping allows you to experiment with and explore data when you’re just getting started. Elasticsearch adds new fields automatically, just by indexing a document. You can add fields to the top-level mapping, and to inner object and nested fields.
+
+### Explicit mapping
+> Explicit mapping allows you to precisely choose how to define the mapping definition, such as:
+> 
+> - Which string fields should be treated as full text fields.
+> - Which fields contain numbers, dates, or geolocations.
+> - The format of date values.
+> - Custom rules to control the mapping for dynamically added fields.
+
+:question: 1. Create a new index mapping called `henry4` that matches the following requirements:
+
+- speaker: keyword
+- line_id: keyword and not aggregateable 
+- speech_number: integer
+
+<details>
+  <summary>View Solution (click to reveal)</summary>
+
+### Mapping numeric identifiers
+>Not all numeric data should be mapped as a numeric field data type. Elasticsearch optimizes numeric fields, such as integer or long, for range queries. However, keyword fields are better for term and other term-level queries.
+>
+>Identifiers, such as an ISBN or a product ID, are rarely used in range queries. However, they are often retrieved using term-level queries.
+>
+>Consider mapping a numeric identifier as a keyword if:
+>
+> - You don’t plan to search for the identifier data using range queries.
+> - Fast retrieval is important. term query searches on keyword fields are often faster than term searches on numeric fields.
+> 
+> If you’re unsure which to use, you can use a multi-field to map the data as both a keyword and a numeric data type.
+https://www.elastic.co/guide/en/elasticsearch/reference/8.1/doc-values.html
+> All fields which support doc values have them enabled by default. If you are sure that you __don’t need to sort or aggregate__ on a field, or access the field value from a script, you can disable doc values in order to save disk space
+
+
+```json
+PUT /henry4
+{
+ "settings": {
+   "number_of_replicas": 0
+ },
+ "mappings": {
+   "properties": {
+    "speaker": {"type": "keyword"},
+    "line_id": {
+      "type": "keyword",
+      "doc_values": false
+    },
+    "speech_number": {"type": "integer"}
+  }
+ }
+}
+```
+
+</details>
+<hr/>
+
+:question: 2. Using the previous ingested `shakespeare` index, re-index the data into the new one called `henry4` that only contains the lines for the play `Henry IV`
+
+<details>
+  <summary>View Solution (click to reveal)</summary>
+
+The best way to do this is to write the term query first, check that contains what you want, then convert the query into the `_reindex`
+
+```json
+POST _reindex
+{
+  "source": { "index": "shakespeare",
+    "query": {
+      "term": {
+        "play_name": "Henry IV"
+      }
+    }
+  },
+  "dest":   { "index": "henry4" }
+}
+
+// output
+
+{
+  "took" : 2844,
+  "timed_out" : false,
+  "total" : 3205,
+  "updated" : 0,
+  "created" : 3205,
+  "deleted" : 0,
+  "batches" : 4,
+  "version_conflicts" : 0,
+  "noops" : 0,
+  "retries" : {
+    "bulk" : 0,
+    "search" : 0
+  },
+  "throttled_millis" : 0,
+  "requests_per_second" : -1.0,
+  "throttled_until_millis" : 0,
+  "failures" : [ ]
+}
+```
+</details>
+<hr/>
+
+3. verify that the data only contains `HENRY IV` play lines.
+
+#TBC
+
+
+## Define and use a custom analyzer that satisfies a given set of requirements
+and
+## Define and use multi-fields with different data types and/or analyzers
+
+:question: 1. Write a custom analyzer that changes the name of `PRINCE HENRY` to `WAYWARD PRINCE HAL` in the `speaker` field, add this to a new index called `henry4_hal`
+
+- Create a new index, 
+- with a mapping on the speaker field 
+- that utilises an analyser 
+- to rename the princes name if it matches.
+
+<details>
+  <summary>View Solution (click to reveal)</summary>
+
+
+## Test the analyser
+
+```json
+POST _analyze
+{
+  "char_filter": {
+      "type": "pattern_replace",
+      "pattern": "PRINCE HENRY",
+      "replacement": "WAYWARD PRINCE HAL"
+  },
+  "text": [
+    "PRINCE WILLIAM",
+    "PRINCE HENRY",
+    "PRINCE HARRY"
+  ]
+}
+
+// output
+
+{
+  "tokens" : [
+    {
+      "token" : "PRINCE WILLIAM",
+      "start_offset" : 0,
+      "end_offset" : 14,
+      "type" : "word",
+      "position" : 0
+    },
+    {
+      "token" : "WAYWARD PRINCE HAL",
+      "start_offset" : 15,
+      "end_offset" : 27,
+      "type" : "word",
+      "position" : 101
+    },
+    {
+      "token" : "PRINEC HARRY",
+      "start_offset" : 28,
+      "end_offset" : 40,
+      "type" : "word",
+      "position" : 202
+    }
+  ]
+}
+
+```
+
+## Put it all together
+
+- mappings -> `speaker` -> `"analyzer": "wayward_son_analyser"`
+
+- settings -> analysis -> `"wayward_son_analyser"` -> `"char_filter": ["rename_filter"]`
+
+- `"rename_filter"` -> `"pattern_replace"`
+
+```json
+PUT /henry4_hal
+{
+  "mappings": {
+    "properties": {
+      "speaker": {
+        "type": "text",
+        "analyzer": "wayward_son_analyser",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "line_id": {
+        "type": "integer"
+      },
+      "speech_number": {
+        "type": "integer"
+      }
+    }
+  },
+  "settings": {
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "wayward_son_analyser": {
+          "type":      "custom", 
+          "tokenizer": "standard",
+          "char_filter": [
+            "rename_filter"
+          ]
+        }
+      },
+      "char_filter": {
+        "rename_filter": {
+          "type": "pattern_replace",
+          "pattern": "PRINCE HENRY",
+          "replacement": "WAYWARD PRINCE HAL"
+        }
+      }
+    }
+  }
+}
+```
+</details>
+<hr/>
+
+:question: 2. re-index `henry4` into `henry4_hal`
+
+<details>
+  <summary>View Solution (click to reveal)</summary>
+
+```json
+POST _reindex
+{
+  "source": { "index": "shakespeare",
+    "query": {
+      "term": {
+        "play_name": "Henry IV"
+      }
+    }
+  },
+  "dest":   { "index": "henry4_hal" }
+}
+```
+</details>
+<hr/>
+
+:question: 3. verify by querying the `henry4_hal` index for the speaker `HAL`, `WAYWARD` and `PRINCE HENRY`
+
+<details>
+  <summary>View Solution (click to reveal)</summary>
+
+```json
+GET henry4_hal/_search
+{
+  "query": {
+    "term": {
+      "speaker": "HAL"
+    }
+  }
+}
+```
+
+> NOTE: Oddly you can't see the `HAL` or `WAYWARD` in the returned data, but you can search for it.
+> What you get returned is the original data `PRINCE HENRY`
+
+#TBC check why this is.
+</details>
+<hr/>
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
 
@@ -816,9 +1254,7 @@ GET ny_parks_index,remote_cluster1:nh_parks_index,remote_cluster2:tx_parks_index
 '''
 
 ### Define and use a search template
-
 A search template is a stored search you can run with different variables.
-
 
 :question: Create and use a search template that returns the lines of a person in a play.
 
@@ -917,435 +1353,7 @@ GET shakespeare/_search/template?filter_path=hits.hits.*.text_entry
 </details>
 <hr>
 
-###  Define a mapping that satisfies a given set of requirements
-
-### Dynamic mapping
-> Dynamic mapping allows you to experiment with and explore data when you’re just getting started. Elasticsearch adds new fields automatically, just by indexing a document. You can add fields to the top-level mapping, and to inner object and nested fields.
-
-### Explicit mapping
-> Explicit mapping allows you to precisely choose how to define the mapping definition, such as:
-> 
-> - Which string fields should be treated as full text fields.
-> - Which fields contain numbers, dates, or geolocations.
-> - The format of date values.
-> - Custom rules to control the mapping for dynamically added fields.
-
-:question: 1. Create a new index mapping called `henry4` that matches the following requirements:
-
-- speaker: keyword
-- line_id: keyword and not aggregateable 
-- speech_number: integer
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-### Mapping numeric identifiers
->Not all numeric data should be mapped as a numeric field data type. Elasticsearch optimizes numeric fields, such as integer or long, for range queries. However, keyword fields are better for term and other term-level queries.
->
->Identifiers, such as an ISBN or a product ID, are rarely used in range queries. However, they are often retrieved using term-level queries.
->
->Consider mapping a numeric identifier as a keyword if:
->
-> - You don’t plan to search for the identifier data using range queries.
-> - Fast retrieval is important. term query searches on keyword fields are often faster than term searches on numeric fields.
-> 
-> If you’re unsure which to use, you can use a multi-field to map the data as both a keyword and a numeric data type.
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/doc-values.html
-> All fields which support doc values have them enabled by default. If you are sure that you __don’t need to sort or aggregate__ on a field, or access the field value from a script, you can disable doc values in order to save disk space
-
-
-```json
-PUT /henry4
-{
- "settings": {
-   "number_of_replicas": 0
- },
- "mappings": {
-   "properties": {
-    "speaker": {"type": "keyword"},
-    "line_id": {
-      "type": "keyword",
-      "doc_values": false
-    },
-    "speech_number": {"type": "integer"}
-  }
- }
-}
-```
-
-</details>
-<hr/>
-
-:question: 2. Using the previous ingested `shakespeare` index, re-index the data into the new one called `henry4` that only contains the lines for the play `Henry IV`
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-The best way to do this is to write the term query first, check that contains what you want, then convert the query into the `_reindex`
-
-```json
-POST _reindex
-{
-  "source": { "index": "shakespeare",
-    "query": {
-      "term": {
-        "play_name": "Henry IV"
-      }
-    }
-  },
-  "dest":   { "index": "henry4" }
-}
-
-// output
-
-{
-  "took" : 2844,
-  "timed_out" : false,
-  "total" : 3205,
-  "updated" : 0,
-  "created" : 3205,
-  "deleted" : 0,
-  "batches" : 4,
-  "version_conflicts" : 0,
-  "noops" : 0,
-  "retries" : {
-    "bulk" : 0,
-    "search" : 0
-  },
-  "throttled_millis" : 0,
-  "requests_per_second" : -1.0,
-  "throttled_until_millis" : 0,
-  "failures" : [ ]
-}
-```
-</details>
-<hr/>
-
-3. verify that the data only contains `HENRY IV` play lines.
-
-#TBC
-
-
-## Define and use a custom analyzer that satisfies a given set of requirements
-and
-## Define and use multi-fields with different data types and/or analyzers
-
-:question: 1. Write a custom analyzer that changes the name of `PRINCE HENRY` to `WAYWARD PRINCE HAL` in the `speaker` field, add this to a new index called `henry4_hal`
-
-- Create a new index, 
-- with a mapping on the speaker field 
-- that utilises an analyser 
-- to rename the princes name if it matches.
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-
-## Test the analyser
-
-```json
-POST _analyze
-{
-  "char_filter": {
-      "type": "pattern_replace",
-      "pattern": "PRINCE HENRY",
-      "replacement": "WAYWARD PRINCE HAL"
-  },
-  "text": [
-    "PRINCE WILLIAM",
-    "PRINCE HENRY",
-    "PRINCE HARRY"
-  ]
-}
-
-// output
-
-{
-  "tokens" : [
-    {
-      "token" : "PRINCE WILLIAM",
-      "start_offset" : 0,
-      "end_offset" : 14,
-      "type" : "word",
-      "position" : 0
-    },
-    {
-      "token" : "WAYWARD PRINCE HAL",
-      "start_offset" : 15,
-      "end_offset" : 27,
-      "type" : "word",
-      "position" : 101
-    },
-    {
-      "token" : "PRINEC HARRY",
-      "start_offset" : 28,
-      "end_offset" : 40,
-      "type" : "word",
-      "position" : 202
-    }
-  ]
-}
-
-```
-
-## Put it all together
-
-- mappings -> `speaker` -> `"analyzer": "wayward_son_analyser"`
-
-- settings -> analysis -> `"wayward_son_analyser"` -> `"char_filter": ["rename_filter"]`
-
-- `"rename_filter"` -> `"pattern_replace"`
-
-```json
-PUT /henry4_hal
-{
-  "mappings": {
-    "properties": {
-      "speaker": {
-        "type": "text",
-        "analyzer": "wayward_son_analyser",
-        "fields": {
-          "keyword": {
-            "type": "keyword",
-            "ignore_above": 256
-          }
-        }
-      },
-      "line_id": {
-        "type": "integer"
-      },
-      "speech_number": {
-        "type": "integer"
-      }
-    }
-  },
-  "settings": {
-    "number_of_replicas": 0,
-    "analysis": {
-      "analyzer": {
-        "wayward_son_analyser": {
-          "type":      "custom", 
-          "tokenizer": "standard",
-          "char_filter": [
-            "rename_filter"
-          ]
-        }
-      },
-      "char_filter": {
-        "rename_filter": {
-          "type": "pattern_replace",
-          "pattern": "PRINCE HENRY",
-          "replacement": "WAYWARD PRINCE HAL"
-        }
-      }
-    }
-  }
-}
-```
-</details>
-<hr/>
-
-:question: 2. re-index `henry4` into `henry4_hal`
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-```json
-POST _reindex
-{
-  "source": { "index": "shakespeare",
-    "query": {
-      "term": {
-        "play_name": "Henry IV"
-      }
-    }
-  },
-  "dest":   { "index": "henry4_hal" }
-}
-```
-</details>
-<hr/>
-
-:question: 3. verify by querying the `henry4_hal` index for the speaker `HAL`, `WAYWARD` and `PRINCE HENRY`
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-```json
-GET henry4_hal/_search
-{
-  "query": {
-    "term": {
-      "speaker": "HAL"
-    }
-  }
-}
-```
-
-> NOTE: Oddly you can't see the `HAL` or `WAYWARD` in the returned data, but you can search for it.
-> What you get returned is the original data `PRINCE HENRY`
-
-#TBC check why this is.
-</details>
-<hr/>
-
-
-
-## Define and use an ingest pipeline that satisfies a given set of requirements, including the use of Painless to modify documents
-:question: Apply a pipeline called `longest-time` to the data in `state-parks` with the following requirements:
-
-- Add a `tag` called `pipeline_ingest` to show that the document was ingested via the pipeline 
-- Combine the `minutes` and `seconds` fields into a new field called `full_time`
-- Add a value
-
-Then reindex the data with that new pipeline
-```json
-POST _ingest/pipeline/_simulate
-{
-  "pipeline": {
-    "processors": [
-      {
-        "append": {
-          "field": "tags",
-          "value": ["pipeline_ingest"]
-        }
-      },
-      {
-        "set": {
-          "tag": "set full_name",
-          "field": "full_name",
-          "value": "{{firstname}} {{lastname}}"
-        }
-      },
-      {
-        "script": {
-          "tag": "39s and over female bonus",
-          "if": """
-            if (ctx.age >= 39) { 
-              if (ctx.gender=="F") { 
-                return true 
-              }
-            } 
-            return false
-          """,
-          "lang": "painless",
-          "source": """
-            ctx.balance = ctx.balance*1.05
-          """
-        }
-      }
-    ]
-  },
-  "docs": [
-    {
-      "_source": {
-        "account_number": 10000,
-        "balance": 1000000,
-        "firstname": "George",
-        "lastname": "Cross",
-        "age": 92,
-        "gender": "M",
-        "address": "1 Dog Lane",
-        "employer": "Wheatens",
-        "email": "george@wheatens.com",
-        "city": "London",
-        "state": "UK"
-      }
-    },
-    {
-      "_source": {
-        "account_number": 10001,
-        "balance": 1000001,
-        "firstname": "Millie",
-        "lastname": "Cross",
-        "age": 84,
-        "gender": "F",
-        "address": "1 Dog Lane",
-        "employer": "Wheatens",
-        "email": "millie@wheatens.com",
-        "city": "London",
-        "state": "UK"
-      }
-    }
-  ]
-}
-```
-
-Here you will get a lot of output, make sure it matches what you expect to see.
-
-Now copy the working pipeline
-
-```json
-PUT _ingest/pipeline/accounts-ingest
-{
-  "description" : "pipeline to account ingest",
-  "processors": [
-      {
-        "append": {
-          "field": "tags",
-          "value": ["pipeline_ingest"]
-        }
-      },
-      {
-        "set": {
-          "tag": "set full_name",
-          "field": "full_name",
-          "value": "{{firstname}} {{lastname}}"
-        }
-      },
-      {
-        "script": {
-          "tag": "39s and over female bonus",
-          "if": """
-            if (ctx.age >= 39) { 
-              if (ctx.gender=="F") { 
-                return true 
-              }
-            } 
-            return false
-          """,
-          "lang": "painless",
-          "source": """
-            ctx.balance = ctx.balance*1.05
-          """
-        }
-      }
-    ]
-}
-```
-Then reindex the data with that new pipeline
-```json
-POST accounts-2021/_update_by_query?pipeline=accounts-ingest
-```
-Checking to verify that the data was transformed properly:
-```json
-POST accounts-raw/_search?filter_path=*.*._id
-{
-  "size": 1, 
-  "query": { 
-    "bool": { 
-      "must": [
-        { "match": { "gender.keyword":   "F"}}
-      ],
-      "filter": [ 
-        { "range": { "age": { "gte": "39" }}}
-      ]
-    }
-  }
-}
-
-// Output 
-
-{
-  "hits" : {
-    "hits" : [
-      {
-        "_id" : "25"
-      }
-    ]
-  }
-}
-```
+# The following are not necessarily tied into this. But work.
 
 ## Configure an index so that it properly maintains the relationships of nested arrays of objects <br>
 :question: 1. Using the below data, create an index with a mapping that allows for relationships to be queried.
