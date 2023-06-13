@@ -1522,7 +1522,7 @@ The important part here is to add the `"type": "nested"` so that the data is not
 So anywhere you have more than one item in the relationship list, it will not be found if you do not use the `nested` term. see docs.
 
 ```json
-PUT henry4_r
+PUT totality_r
 {
   "mappings": {
     "properties": {
@@ -1537,7 +1537,7 @@ PUT henry4_r
 </details>
 <hr/>
 
-:question: 2. Then query all people that are a `foe` of `KING HENRY IV`
+:question: 2. Then query all items in the index that are the `first` of `STATE`
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -1545,7 +1545,7 @@ PUT henry4_r
 You need to be using a `nested` query here as well.  Otherwise it will not work.
 
 ```json
-GET henry4_r/_search
+GET totality_r/_search
 {
   "query": {
     "nested": {
@@ -1553,8 +1553,8 @@ GET henry4_r/_search
       "query": {
         "bool": {
           "must": [
-            { "match": { "relationship.name": "KING HENRY IV" }},
-            { "match": { "relationship.type":  "foe" }} 
+            { "match": { "relationship.name": "STATE" }},
+            { "match": { "relationship.type":  "first" }} 
           ]
         }
       }
@@ -1568,37 +1568,7 @@ GET henry4_r/_search
     "hits" : [
       {
         "_source" : {
-          "name" : "EARL OF WORCESTER"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "GLENDOWER"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "EARL OF DOUGLAS"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "MORTIMER"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "ARCHBISHOP OF YORK"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "NORTHUMBERLAND"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "HOTSPUR"
+          "name" : "Texas"
         }
       }
     ]
