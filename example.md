@@ -16,15 +16,17 @@ The file named solar_eclipse_2024.json has the data.
 
 ## What this doesnt cover:
 1) Write and execute a query that searches across multiple clusters
-2) Write and execute a search that utilizes a runtime field
-3) Configure a cluster for cross cluster search
-4) Implement cross-cluster replication
+2) Configure a cluster for cross cluster search
+3) Implement cross-cluster replication
 
 ## What this does cover:
 Everything else on the topic list for the 8.1 exam as of June 15th, 2023.
 
-## Example:
-Define an index that satisfies a given set of requirements:
+## Lets Get Started:
+This example will walk you through the majority of the Elasticsearch Certified Engineer Exam using some 2024 solar eclipse totality information for state parks.
+
+### Define an index that satisfies a given set of requirements
+Insert explanation here
 ```json
   PUT totality_2024-raw
   {
@@ -35,7 +37,8 @@ Define an index that satisfies a given set of requirements:
   }
 ```
 
-Define and use an index template for a given pattern that satisfies a given set of requirements
+### Define and use an index template for a given pattern that satisfies a given set of requirements
+Insert explanation here
 ```json
 PUT _template/totality_2024-tmpl
 {
@@ -64,11 +67,68 @@ PUT _template/totality_2024-tmpl
   }
 }
 ```
+### Lets Upload The Data
 
-# Define and use a dynamic template that satisfies a given set of requirements 
+### Cluster Management
+At this stage, it might seem a bit silly to be creating a snapshot at this point, but the reasoning is simple: It allows us to create a restore point in the event that an action we take messes up the data, allowing us to quickly and easily restore to a known good state if needed.
 
-# Define an Index Lifecycle Management policy for a time-series index 
-### This isnt necessarily specific to this but is inportant to setup
+### Diagnose shard issues and repair a cluster's health 
+<b> Check Health In 1 of 2 Ways </b>
+```json
+GET _cluster/health
+```
+
+```json
+GET _cat/health?v
+```
+### Find Broken Indices
+Find broken indices by checking them all, or which ones are red, yellow, and green.
+To do this, ensure that index that you created is NOT broken and is green!
+
+```json
+GET /_cat/indices
+GET _cat/indices?health=red
+GET _cat/indices?health=yellow
+GET _cat/indices?health=green
+```
+### Explaining Index Health 
+```json
+GET _cluster/allocation/explain
+{
+  "index": "broken_index"
+}
+```
+
+### View the shard allocation for the index
+```json
+
+GET _cat/shards/broken_index?v&s=index
+
+```
+### Repair
+Repairing an index can be done in many ways such as reducing the number of replicas required. This would be done to matche the number of replia nodes available. In the event that a single node cluster is running, the number of replicas can be set to 0. 
+
+```json
+PUT /broken_index/_settings
+{
+    "number_of_replicas": 0
+    
+}
+```
+
+### Backup and restore a cluster and/or specific indices 
+### Configure a snapshot to be searchable 
+Searchable snapshots let you use snapshots to search infrequently accessed and read-only data in a very cost-effective fashion. The cold and frozen data tiers use searchable snapshots to reduce your storage and operating costs.
+
+Searchable snapshots eliminate the need for replica shards, potentially halving the local storage needed to search your data. Searchable snapshots rely on the same snapshot mechanism you already use for backups and have minimal impact on your snapshot repository storage costs
+```json
+xpack.searchable.snapshot.shared_cache.size=100mb
+```
+
+### Define and use a dynamic template that satisfies a given set of requirements 
+
+### Define an Index Lifecycle Management policy for a time-series index 
+<b> This isnt necessarily specific to this but is inportant to setup</b>
 Example from Rich Raposa (Elastic Exam video):<br>
   the corresponding index template is called task3<br>
   the data is hot for 3 minutes, then immediately rolls over to warm<br>
@@ -121,8 +181,8 @@ PUT _ilm/policy/task3
 }
 ```
 
-# Define an index template that creates a new data stream 
-## Create ILM template
+### Define an index template that creates a new data stream 
+<b> Create ILM template </b>
 
 As far as i can tell ILM cron runs every 5-10mins.  So doing anything less than this does not work
 
@@ -172,7 +232,7 @@ PUT _ilm/policy/test-ilm
 }
 ```
 
-## Create an index template (not a data_stream)
+<b> Create an index template (not a data_stream) </b>
 
 ```json
 PUT _index_template/test-ilm-tmpl
@@ -206,8 +266,7 @@ PUT _index_template/test-ilm-tmpl
 }
 ```
 
-
-## Bootstrap the initial index
+<b> Bootstrap the initial index </b>
 :bulb: This is very important - do this before data ingest
 
 
@@ -225,7 +284,7 @@ PUT test-index-000000
 ```
 
 
-## Add a doc or two
+<b> Add a doc or two </b>
 
 ```json
 PUT test-index/_doc/1
@@ -241,19 +300,19 @@ PUT test-index/_doc/2
 }
 ```
 
-## Check index
+<b> Check index </b>
 
 ```json
 GET test-index-000000
 ```
 
-## Check alias
+### Check alias
 
 ```json
 GET test-index
 ```
 
-## View ILM phase for each index (rinse and repeat here)
+### View ILM phase for each index (rinse and repeat here)
 
 At this point you will have indicies being created and rotated
 keep requerying this and see that they are.
@@ -294,10 +353,8 @@ You can also see that no time is exact.  So days/hours are a better time frame t
   }
 }
 ```
-
-
 --------------------------------------
-## Write and execute a search query for terms and/or phrases in one or more fields of an index
+### Write and execute a search query for terms and/or phrases in one or more fields of an index
 
 How many times do the words New Hanpshire appear in the eclipse data
 How many times do the words New and Hampshire appear in the eclipse data
@@ -424,13 +481,13 @@ GET shakespeare/_search
 - Other searches include but are not limited to:
 How many states are in totality (count unique state field)
 
-## Asynchronous Search
+### Asynchronous Search
 -Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
 
 Write an asynchronous search to sort by timestamp:
 ```json
 
-POST /kibana_sample_data_logs/_async_search?size=0
+POST /{insert index here}/_async_search?size=0
 {
   "sort": [
     { "@timestamp": { "order": "asc" } }
@@ -446,26 +503,26 @@ POST /kibana_sample_data_logs/_async_search?size=0
 }
 ```
 
-## Get Asynchronous Search
+### Get Asynchronous Search Details
 ```json
 GET /_async_search/{id}=
 ```
 
-## Get Asynchronous Search Status
+### Get Asynchronous Search Status
 ```json
 GET /_async_search/status/{id}
 ```
 
-## Delete Asynchronous Search
+### Delete An Asynchronous Search
 ```json
-DELETE /_async_search/FmRldE8zREVEUzA2ZVpUeGs2ejJFUFEaMkZ5QTVrSTZSaVN3WlNFVmtlWHJsdzoxMDc=
+DELETE /_async_search/{id}
 ```
 
-Write and execute metric and bucket aggregations
+### Write and execute metric and bucket aggregations
 
 Pull the number of sales, Max, Min, Average and total sales for the American customers.
 ```json
-GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
+GET {solar eclipse}/_search?filter_path=aggregations
 {
   "size": 0,
   "query": {
@@ -482,7 +539,7 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
   }
 }
 ```
-## Bucket Aggregations
+### Bucket Aggregations
 Display number of sales per day
 ```json
 GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
@@ -500,17 +557,17 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 }
 ```
 
-## Write and execute aggregations that contain sub-aggregations
+### Write and execute aggregations that contain sub-aggregations
 
-# Developing Search Applications
-## Highlight the search terms in the response of a query
-In the spoken lines of the play, highlight the word Hamlet starting the highlight with "#aaa# and ending it with #bbb#
+### Developing Search Applications
+### Highlight the search terms in the response of a query
+In the New Hampshire parks, highlight the Name starting the highlight with "#aaa# and ending it with #bbb#
 ```json
 GET shakespeare/_search
 {
     "query": {
         "match": {
-            "text_entry":  "Hamlet"
+            "text_entry":  "New Hampshire"
         }
     }, 
     "highlight": {
@@ -525,17 +582,18 @@ GET shakespeare/_search
 ```
 
 ## Return all of the results of a query by a given requirements
+Search the template for all of the state parks in Vermont, sorted in descending order by the number of minutes of totality.
 ```json
 GET shakespeare/_search
 {
     "query": {
         "term": {
-            "speaker": "OTHELLO"
+            "state": "Vermont"
           }
     }, 
     "sort": [
       {
-        "speech_number": {
+        "totality_minutes": {
           "order": "desc"
         }
       }
@@ -543,10 +601,10 @@ GET shakespeare/_search
 }
 ```
 
-## Pagination 
-Paginate the Othello play, 20 speech lines per page, stating from line 40.
+### Pagination 
+Paginate the Totality results, 20 state parks per page, stating from state park 40.
 ```json
-GET shakespeare/_search
+GET {template}/_search
 {
     "size": 20,
     "from": 40,
@@ -565,11 +623,11 @@ GET shakespeare/_search
 }
 ```
 
-Write and execute a query that searches across multiple clusters
-In this instance, get multiple clusters up and connected!
+### Write and execute a query that searches across multiple clusters
+In this instance, what we will assume is that each cluster has separate states information on it. Therefore, since there are 11 states in totality, there would be 11 clusters and 11 total indexes.
 
 '''json
-GET local_index,remote_cluster1:that_remote_index,remote_cluster2:that_other_remote_index
+GET ny_parks_index,remote_cluster1:nh_parks_index,remote_cluster2:tx_parks_index
 {
   "query" : {
     "match_all" : {}
@@ -577,105 +635,10 @@ GET local_index,remote_cluster1:that_remote_index,remote_cluster2:that_other_rem
 }
 '''
 
-# Developing Search Apps
-## Highlight the search terms in the response of a query
-❓ In the spoken lines of the play, highlight the word Hamlet starting the highlight with "#aaa# and ending it with #bbb#
-
-```json
-GET shakespeare/_search
-{
-    "query": {
-        "match": {
-            "text_entry":  "Hamlet"
-        }
-    }, 
-    "highlight": {
-        "fields":  { 
-          "text_entry": {
-            "pre_tags": "#aaa#", 
-            "post_tags": "#bbb#"
-        }
-      }
-    }
-}
-```
-
-# Sort the results of a query by a given set of requirements <br>
-:question: Return all of `Othellos` lines in reverse order.
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-```json
-GET shakespeare/_search
-{
-    "query": {
-        "term": {
-            "speaker": "OTHELLO"
-          }
-    }, 
-    "sort": [
-      {
-        "speech_number": {
-          "order": "desc"
-        }
-      }
-    ]
-}
-```
-</details>
-<hr>
-
-# Implement pagination of the results of a search query
-:question: Paginate the `Othello` play, `20` speech lines per page, stating from line `40`.
-
-:question: What is the first line on this page?
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-
-```json
-GET shakespeare/_search
-{
-    "size": 20,
-    "from": 40,
-    "query": {
-        "term": {
-            "play_name": "Othello"
-          }
-    }, 
-    "sort": [
-      {
-        "speech_number": {
-          "order": "asc"
-        }
-      }
-    ]
-}
-
-// Output
-
-      {
-        "_source" : {
-          "text_entry" : "Will you think so?"
-        }
-      }
-```
-
-</details>
-<hr>
-
-
-
-
-## Define and use index aliases
+### Define and use index aliases
 ### part 1
 
-:question: Define an index alias for `accounts-raw` called `accounts-all`
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
+:question: Define an index alias for `totality-raw` called `totality-all`
 
 ```json
 POST /_aliases
@@ -683,32 +646,22 @@ POST /_aliases
   "actions": [
     {
       "add": {
-        "index": "accounts-raw",
-        "alias": "accounts-all"
+        "index": "totality-raw",
+        "alias": "totality-all"
       }
     }
   ]
 }
 ```
 
-Check that the document count matches
-
-```json
-GET accounts-all/_count
-```
-</details>
-<hr>
+To verify: <br>
+Check that the document count matches using GET totality-all/_count
 
 ### part 2
 
 :question: Define an index alias for `accounts-raw` called `accounts-male`
 
 :question: Apply a filter to only show the male account owners.
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/indices-aliases.html
 
 1. check that the field you want to filter is a keyword
 
@@ -807,7 +760,7 @@ POST accounts-raw/_search?filter_path=hits.total.value
 </details>
 <hr>
 
-## Define and use a search template
+### Define and use a search template
 
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/search-template.html
 
@@ -908,15 +861,7 @@ GET shakespeare/_search/template?filter_path=hits.hits.*.text_entry
 </details>
 <hr>
 
-##  Define a mapping that satisfies a given set of requirements
-
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/mapping.html
-> Mapping is the process of defining how a document, and the fields it contains, are stored and indexed.
-
-> Each document is a collection of fields, which each have their own data type. When mapping your data, you create a mapping definition, which contains a list of fields that are pertinent to the document. 
-
-> A mapping definition also includes metadata fields, like the `_source` field, which customize how a document’s associated metadata is handled.
-
+###  Define a mapping that satisfies a given set of requirements
 
 ### Dynamic mapping
 > Dynamic mapping allows you to experiment with and explore data when you’re just getting started. Elasticsearch adds new fields automatically, just by indexing a document. You can add fields to the top-level mapping, and to inner object and nested fields.
@@ -1192,14 +1137,9 @@ GET henry4_hal/_search
 ## Use the Reindex API and Update By Query API to reindex and/or update documents
 
 ### Part 1
-:question: Reindex the `accounts-raw` index into `accounts-2021`.
+:question: Reindex the `totality-raw` index into `totality-state-parks`.
+:question: Then reindex `totality-state-parks` into `totality-full` index where only the state parks that have 100% totality coverage are present.
 
-:question: Then reindex `accounts-2021` into `accounts-female` index where only the female account holders are present.
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-https://www.elastic.co/guide/en/elasticsearch/reference/8.1/docs-update-by-query.html
 > :warning: 
 Reindex requires _source to be enabled for all documents in the source index.
 
@@ -1208,11 +1148,11 @@ Reindex requires _source to be enabled for all documents in the source index.
 ```json
 POST _reindex
 {
-  "source": { "index": "accounts-raw"  },
-  "dest":   { "index": "accounts-2021" }
+  "source": { "index": "totality-raw"  },
+  "dest":   { "index": "totality-state-parks" }
 }
 
-GET accounts-2021/_count?filter_path=count
+GET totality-state-parks/_count?filter_path=count
 
 // Output 
 
@@ -1221,21 +1161,21 @@ GET accounts-2021/_count?filter_path=count
 }
 ```
 
-reindex into `accounts-female`
+reindex into `totality-full`
 
 :bulb: do the term query first, then once you are happy with the output, convert it into a `_reindex`
 
 ```json
 POST _reindex
 {
-  "source": { "index": "accounts-raw",
+  "source": { "index": "totality-state-parks",
     "query": {
       "term": {
         "gender.keyword": "F"
       }
     }
   },
-  "dest":   { "index": "accounts-female" }
+  "dest":   { "index": "totality-full" }
 }
 ```
 
@@ -1246,13 +1186,13 @@ GET accounts-female/_count?filter_path=count
 // Output 
 
 {
-  "count" : 493
+  "count" : ??
 }
 ```
 
-Check again
+Check again (fix this later)
 ```json
-GET /accounts-female/_search?filter_path=*.*.*.gender
+GET /totality-state-parks/_search?filter_path=*.*.*.gender
 
 // Output 
 
@@ -1383,14 +1323,161 @@ GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
 - Add a value
 
 Then reindex the data with that new pipeline
+```json
+POST _ingest/pipeline/_simulate
+{
+  "pipeline": {
+    "processors": [
+      {
+        "append": {
+          "field": "tags",
+          "value": ["pipeline_ingest"]
+        }
+      },
+      {
+        "set": {
+          "tag": "set full_name",
+          "field": "full_name",
+          "value": "{{firstname}} {{lastname}}"
+        }
+      },
+      {
+        "script": {
+          "tag": "39s and over female bonus",
+          "if": """
+            if (ctx.age >= 39) { 
+              if (ctx.gender=="F") { 
+                return true 
+              }
+            } 
+            return false
+          """,
+          "lang": "painless",
+          "source": """
+            ctx.balance = ctx.balance*1.05
+          """
+        }
+      }
+    ]
+  },
+  "docs": [
+    {
+      "_source": {
+        "account_number": 10000,
+        "balance": 1000000,
+        "firstname": "George",
+        "lastname": "Cross",
+        "age": 92,
+        "gender": "M",
+        "address": "1 Dog Lane",
+        "employer": "Wheatens",
+        "email": "george@wheatens.com",
+        "city": "London",
+        "state": "UK"
+      }
+    },
+    {
+      "_source": {
+        "account_number": 10001,
+        "balance": 1000001,
+        "firstname": "Millie",
+        "lastname": "Cross",
+        "age": 84,
+        "gender": "F",
+        "address": "1 Dog Lane",
+        "employer": "Wheatens",
+        "email": "millie@wheatens.com",
+        "city": "London",
+        "state": "UK"
+      }
+    }
+  ]
+}
+```
+
+Here you will get a lot of output, make sure it matches what you expect to see.
+
+Now copy the working pipeline
+
+```json
+PUT _ingest/pipeline/accounts-ingest
+{
+  "description" : "pipeline to account ingest",
+  "processors": [
+      {
+        "append": {
+          "field": "tags",
+          "value": ["pipeline_ingest"]
+        }
+      },
+      {
+        "set": {
+          "tag": "set full_name",
+          "field": "full_name",
+          "value": "{{firstname}} {{lastname}}"
+        }
+      },
+      {
+        "script": {
+          "tag": "39s and over female bonus",
+          "if": """
+            if (ctx.age >= 39) { 
+              if (ctx.gender=="F") { 
+                return true 
+              }
+            } 
+            return false
+          """,
+          "lang": "painless",
+          "source": """
+            ctx.balance = ctx.balance*1.05
+          """
+        }
+      }
+    ]
+}
+```
+Then reindex the data with that new pipeline
+```json
+POST accounts-2021/_update_by_query?pipeline=accounts-ingest
+```
+Checking to verify that the data was transformed properly:
+```json
+POST accounts-raw/_search?filter_path=*.*._id
+{
+  "size": 1, 
+  "query": { 
+    "bool": { 
+      "must": [
+        { "match": { "gender.keyword":   "F"}}
+      ],
+      "filter": [ 
+        { "range": { "age": { "gte": "39" }}}
+      ]
+    }
+  }
+}
+
+// Output 
+
+{
+  "hits" : {
+    "hits" : [
+      {
+        "_id" : "25"
+      }
+    ]
+  }
+}
+```
 
 ## Configure an index so that it properly maintains the relationships of nested arrays of objects <br>
 :question: 1. Using the below data, create an index with a mapping that allows for relationships to be queried.
 
 ```json
-PUT henry4_r/_doc/_bulk
-{"index":{"_index":"henry4_r","_id":"0"}}
-{"name":"KING HENRY IV","relationship":[{"name":"PRINCE HENRY","type":"father"}]}
+PUT totality_r/_doc/_bulk
+{"index":{"_index":"totality_r","_id":"0"}}
+{"name":"Texas","relationship":[{"name":"STATE","type":"first"}]}
 {"index":{"_index":"henry4_r","_id":"1"}}
 {"name":"FALSTAFF","relationship":[{"name":"PRINCE HENRY","type":"friend"}]}
 {"index":{"_index":"henry4_r","_id":"2"}}
@@ -1590,8 +1677,3 @@ GET henry4_r/_search?filter_path=*.*.*.name
 
 </details>
 <hr/>
-
-# Cluster Management 
-## Diagnose shard issues and repair a cluster's health 
-## Backup and restore a cluster and/or specific indices 
-## Configure a snapshot to be searchable 
