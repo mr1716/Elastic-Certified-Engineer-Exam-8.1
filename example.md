@@ -15,8 +15,8 @@ To install Elasticsearch on a system such as VM or laptop or desktop, download t
 The file named solar_eclipse_2024.json has the data.
 
 ## What this doesnt explicitly cover:
-2) Configure a cluster for cross cluster search
-3) Implement cross-cluster replication
+1) Configure a cluster for cross cluster search
+2) Implement cross-cluster replication
 
 ## Notes:
 This shows an example for how to "Write and execute a query that searches across multiple clusters" but this doesnt actually 
