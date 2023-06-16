@@ -14,80 +14,52 @@ To install Elasticsearch on a system such as VM or laptop or desktop, download t
 ### Uploading The File/Data
 The file named solar_eclipse_2024.json has the data.
 
-## What this doesnt explicitly cover:
-1) Configure a cluster for cross cluster search
-2) Implement cross-cluster replication
-
 ## Notes:
 This shows an example for how to "Write and execute a query that searches across multiple clusters" but this doesnt actually 
 ## What this does cover:
 Everything else on the topic list for the 8.1 exam as of June 15th, 2023.
 
 ## Lets Get Started:
-This example will walk you through the majority of the Elasticsearch Certified Engineer Exam using some 2024 solar eclipse totality information for state parks.
+This example will walk you through the majority of the Elasticsearch Certified Engineer Exam using some 2024 solar eclipse totality information for state parks. This will start with setting up multiple clusters, which wont be necessary for the exam, since all you will need to do is start the systems. 
 
 Steps:
-1) We will define an index, then an index template
-2) Upload the data
-3) Check the cluster health and configure cluster restore
-4) 
+1) The first thing to do will be to configure clusters
+2) We will define an index, then an index template
+3) Upload the data
+4) Check the cluster health and configure cluster restore
+5) 
 
-### Define an index that satisfies a given set of requirements
-Insert explanation here
-```json
-  PUT totality_2024-raw
-  {
-    "settings": {
-      "number_of_shards": 1,
-      "number_of_replicas": 0
-    }
-  }
-```
+## Configuring The Environment (Multiple Clusters)
+### You might need to configure multiple clusters on the exam, but rather cross cluster searches and cross-cluster replication. 
+<b> There are other cluster management topics that dont necessarily require multiple clusters such as:
+1) Diagnose shard issues and repair a cluster's health
+2) Backup and restore a cluster and/or specific indices
+3) Configure a snapshot to be searchable
+</b>
 
-### Define and use an index template for a given pattern that satisfies a given set of requirements
-Insert explanation here
-```json
-PUT _template/totality_2024-tmpl
-{
-  "index_patterns": ["totality_2024-*"],
-  "settings": {
-    "number_of_shards": 1,
-    "number_of_replicas": 0
-  },
-  "mappings": {
-    "_source": {
-      "enabled": false
-    },
-    "properties": {
-    "name" :  { "type": "keyword" },
-    "street_address" :  { "type": "keyword" },
-    "city" :  { "type": "keyword" },    
-    "state" :  { "type": "keyword" },
-    "zip_code" :  { "type": "keyword" }    
-    "coverage" :  { "type": "keyword" },
-    "eclipse_date" :  { "type": "date" },
-    "totality_minutes" :  { "type": "integer" },
-    "totality_seconds" :  { "type": "integer" },
-    "start_time" :  { "type": "text" },
-    "max_time" :  { "type": "text" },
-    "end_time" :  { "type": "text" }
-    }
-  }
-}
-```
-### Define and use a dynamic template that satisfies a given set of requirements
+### Configuring Multi-Node Elasticsearch Cluster
+1) Install elasticsearch on both hosts
+2) On each node, open the Elasticsearch configuration file and set the name of your Elasticsearch cluster.
+3) Set Descriptive Names
+4) Disable Memory Swapping
+5) Define Roles Of Elasticsearch Nodes
+6) Bind Elasticsearch to Non-loopback Address
+7) Discovery and cluster formation settings
+8) Set JVM Heap Size
+9) Validate Maximum Processes And Open File Descriptor
+10) Ensure Enough Virtual Memory
+11) Ensure To Open Elasticsearch Ports On Firewall such as FirewallD 
+12) Run Elasticsearch
+Follow the steps at to configure the cluster <br>
+https://kifarunix.com/setup-multi-node-elasticsearch-cluster
 
-### Lets Upload The Data
+### Check Cluster Health
+Check The Cluster Health to verify that the cluster is properly configured.
 
-### Cluster Management
-At this stage, it might seem a bit silly to be creating a snapshot at this point, but the reasoning is simple: It allows us to create a restore point in the event that an action we take messes up the data, allowing us to quickly and easily restore to a known good state if needed.
-
-### Diagnose shard issues and repair a cluster's health 
-<b> Check Health In 1 of 2 Ways </b>
 ```json
 GET _cluster/health
 ```
-
+OR
 ```json
 GET _cat/health?v
 ```
@@ -137,10 +109,94 @@ Searchable snapshots eliminate the need for replica shards, potentially halving 
 ```json
 xpack.searchable.snapshot.shared_cache.size=100mb
 ```
-### Asynchronous Search
+
+## Uploading the Data
+Now that the environment is configured, they are confirmed to be healthy, and everything is saved to a snapshot, lets create an index and index template before we upload the data!
+### Define an index that satisfies a given set of requirements
+Insert explanation here
+```json
+  PUT totality_2024-raw
+  {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    }
+  }
+```
+
+### Define and use an index template for a given pattern that satisfies a given set of requirements
+Insert explanation here
+```json
+PUT _template/totality_2024-tmpl
+{
+  "index_patterns": ["totality_2024-*"],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "_source": {
+      "enabled": false
+    },
+    "properties": {
+    "name" :  { "type": "keyword" },
+    "street_address" :  { "type": "keyword" },
+    "city" :  { "type": "keyword" },    
+    "state" :  { "type": "keyword" },
+    "zip_code" :  { "type": "keyword" }    
+    "coverage" :  { "type": "keyword" },
+    "eclipse_date" :  { "type": "date" },
+    "totality_minutes" :  { "type": "integer" },
+    "totality_seconds" :  { "type": "integer" },
+    "start_time" :  { "type": "text" },
+    "max_time" :  { "type": "text" },
+    "end_time" :  { "type": "text" }
+    }
+  }
+}
+```
+### Define and use a dynamic template that satisfies a given set of requirements
+Why use a dynamic template
+
+### Lets Upload The Data
+3 uploads:
+1st for general data on the master node.
+2nd for just 1 state on the master node
+3rd for just a 2nd state on a client node
+
+The reason for this is to be able to practice with cross cluster replication and cross cluster search!
+### Perform a remote cluster search
+
+```json
+GET /cluster_one:twitter/_search
+{
+  "query": {
+    "match": {
+      "user": "kimchy"
+    }
+  }
+}
+```
+
+### Perform a multiple cross cluster search
+
+```json
+GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
+{
+  "query": {
+    "match": {
+      "user": "kimchy"
+    }
+  }
+}
+```
+### Cross Cluster Replication
+(how is this done? insert here)
+
+## Asynchronous Search
 -Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
 
-Write an asynchronous search to sort by timestamp:
+### Write an asynchronous search to sort by timestamp:
 ```json
 
 POST /{insert index here}/_async_search?size=0
