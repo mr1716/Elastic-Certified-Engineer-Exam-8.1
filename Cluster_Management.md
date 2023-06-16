@@ -640,7 +640,7 @@ GET west-cluster:follower-kibana_sample_data_ecommerce/_count
 }
 ```
 
-## Perform as remote cluster search
+## Perform a remote cluster search
 
 ```json
 GET /cluster_one:twitter/_search
