@@ -24,13 +24,8 @@ $ curl -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT 
 
 ## Lets Get Started:
 This example will walk you through the majority of the Elasticsearch Certified Engineer Exam using some 2024 solar eclipse totality information for state parks. This will start with setting up multiple clusters, which wont be necessary for the exam, since all you will need to do is start the systems. 
-
-Steps:
-1) The first thing to do will be to configure clusters
-2) We will define an index, then an index template
-3) Upload the data
-4) Check the cluster health and configure cluster restore
-5) 
+<br>
+The way that this will work is that it will walk you through creating an environment and then help you perform the steps to perform the tasks for the exam.
 
 # Configuring The Environment (Multiple Clusters)
 ### You might need to configure multiple clusters on the exam, but rather cross cluster searches and cross-cluster replication. 
