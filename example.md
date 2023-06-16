@@ -17,7 +17,9 @@ The docker instance for 8.1.0 can be found at: https://hub.docker.com/layers/lib
 To install Elasticsearch on a system such as VM or laptop or desktop, download the release from Elasticsearch, ensure that the required version of Java and other required software dependencies are installed, and then install and start Elasticsearch. https://www.elastic.co/downloads/past-releases/elasticsearch-8-1-0
 
 ### Uploading The File/Data
-The file named solar_eclipse_2024.json has the data.
+The file named solar_eclipse_2024.json has the data we're going to use. It is found [here](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/solar_eclipse_2024.json) <br>
+To upload this into elasticsearch, run: <br>
+$ curl -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/shakespeare/_bulk --data-binary "@shakespeare_6.0.json"; echo
 
 
 ## Lets Get Started:
