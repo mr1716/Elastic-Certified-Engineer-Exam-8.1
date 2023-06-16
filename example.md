@@ -2,7 +2,12 @@
 ## Goal
 The goal of this is to provide a unified and easy example for someone to go through and be able to study for the Elasticsearch Engineer exam using unified data.
 
-## Getting Started
+### Notes:
+If you dont want to use 2 environments and perform the cross cluster work, then you can skip those sections and only configure 1 Elasticsearch machine. 
+### What this does cover:
+Everything else on the topic list for the 8.1 exam as of June 15th, 2023. 
+
+# Getting Started
 ### Environment Setup
 To setup the environment, install the version of Elasticsearch that the exam requires. This is version 8.1. There are 2 ways to configure your environment, with each method having their own benefits.
 1) Docker: <br>
@@ -14,10 +19,6 @@ To install Elasticsearch on a system such as VM or laptop or desktop, download t
 ### Uploading The File/Data
 The file named solar_eclipse_2024.json has the data.
 
-## Notes:
-This shows an example for how to "Write and execute a query that searches across multiple clusters" but this doesnt actually 
-## What this does cover:
-Everything else on the topic list for the 8.1 exam as of June 15th, 2023.
 
 ## Lets Get Started:
 This example will walk you through the majority of the Elasticsearch Certified Engineer Exam using some 2024 solar eclipse totality information for state parks. This will start with setting up multiple clusters, which wont be necessary for the exam, since all you will need to do is start the systems. 
@@ -29,7 +30,7 @@ Steps:
 4) Check the cluster health and configure cluster restore
 5) 
 
-## Configuring The Environment (Multiple Clusters)
+# Configuring The Environment (Multiple Clusters)
 ### You might need to configure multiple clusters on the exam, but rather cross cluster searches and cross-cluster replication. 
 <b> There are other cluster management topics that dont necessarily require multiple clusters such as:
 1) Diagnose shard issues and repair a cluster's health
@@ -53,6 +54,7 @@ Steps:
 Follow the steps at to configure the cluster <br>
 https://kifarunix.com/setup-multi-node-elasticsearch-cluster
 
+# Configuration Using Exam Topics
 ### Check Cluster Health \*
 Check The Cluster Health to verify that the cluster is properly configured.
 
@@ -87,7 +89,7 @@ GET _cluster/allocation/explain
 GET _cat/shards/broken_index?v&s=index
 
 ```
-### Repair
+### Repair And Index
 Repairing an index can be done in many ways such as reducing the number of replicas required. This would be done to matche the number of replia nodes available. In the event that a single node cluster is running, the number of replicas can be set to 0. 
 
 This might not need to be repaired, but if you do notice issues, here's how you would do it!
@@ -113,8 +115,6 @@ xpack.searchable.snapshot.shared_cache.size=100mb
 ### Cross Cluster Replication
 (how is this done? insert here)
 
-## Uploading the Data
-Now that the environment is configured, they are confirmed to be healthy, and everything is saved to a snapshot, lets create an index and index template before we upload the data!
 ### Define an index that satisfies a given set of requirements
 Insert explanation here
 ```json
@@ -171,7 +171,7 @@ Why use a dynamic template
 
 The reason for this is to be able to practice with cross cluster replication and cross cluster search!
 
-### Define and use index aliases
+### Define and use index aliases \*
 ### part 1
 
 :question: Define an index alias for `totality-raw` called `totality-all`
@@ -195,34 +195,21 @@ Check that the document count matches using GET totality-all/_count
 
 ### part 2
 
-:question: Define an index alias for `accounts-raw` called `accounts-male`
+:question: Define an index alias for `totality-raw` called `totality-full`
 
-:question: Apply a filter to only show the male account owners.
+:question: Apply a filter to only show the state parks where the totality is 100%.
+Alternatives include aliases for each state, zipcode, 
 
 1. check that the field you want to filter is a keyword
-
 ```json
-GET accounts-raw/_mapping/field/gender
+GET totality-raw/_mapping/field/coverage
 
 // Output 
 
 {
-  "accounts-raw" : {
+  "totality-raw" : {
     "mappings" : {
-      "gender" : {
-        "full_name" : "gender",
-        "mapping" : {
-          "gender" : {
-            "type" : "text",
-            "fields" : {
-              "keyword" : {
-                "type" : "keyword",
-                "ignore_above" : 256
-              }
-            }
-          }
-        }
-      }
+
     }
   }
 }
@@ -238,11 +225,11 @@ POST /_aliases
   "actions": [
     {
       "add": {
-        "index": "accounts-raw",
-        "alias": "accounts-male",
+        "index": "totality-raw",
+        "alias": "totality-full",
         "filter": {
           "term": {
-            "gender.keyword": "M"
+            "coverage.keyword": "100"
           }
         }
       }
@@ -254,12 +241,12 @@ POST /_aliases
 3. test
 
 ```json
-GET accounts-male/_count
+GET totality-full/_count
 
 // Output 
 
 {
-  "count" : 507,
+  "count" : ??,
   "_shards" : {
     "total" : 1,
     "successful" : 1,
@@ -269,16 +256,16 @@ GET accounts-male/_count
 }
 ```
 
-4. :question: BONUS: Run a query to do the same on `accounts-raw` index
+4. :question: BONUS: Run a query to do the same on `totality-raw` index
 
 Extra bonus: only print the total hits
 
 ```json
-POST accounts-raw/_search?filter_path=hits.total.value
+POST totality-raw/_search?filter_path=hits.total.value
 {
   "query": {
     "match": {
-      "gender": "M"
+      "coverage": "100%"
     }
   }
 }
@@ -286,7 +273,7 @@ POST accounts-raw/_search?filter_path=hits.total.value
 {
   "hits" : {
     "total" : {
-      "value" : 507
+      "value" : ??
     }
   }
 }
@@ -297,8 +284,8 @@ POST accounts-raw/_search?filter_path=hits.total.value
 ## Use the Reindex API and Update By Query API to reindex and/or update documents
 
 ### Part 1
-:question: Reindex the `totality-raw` index into `totality-state-parks`.
-:question: Then reindex `totality-state-parks` into `totality-full` index where only the state parks that have 100% totality coverage are present.
+:question: Reindex the `totality-raw` index into `totality-state-parks-raw`.
+:question: Then reindex `totality-state-parks-raw` into `totality-state-parks-full` index where only the state parks that have 100% totality coverage are present.
 
 > :warning: 
 Reindex requires _source to be enabled for all documents in the source index.
@@ -309,7 +296,7 @@ Reindex requires _source to be enabled for all documents in the source index.
 POST _reindex
 {
   "source": { "index": "totality-raw"  },
-  "dest":   { "index": "totality-state-parks" }
+  "dest":   { "index": "totality-state-parks-raw" }
 }
 
 GET totality-state-parks/_count?filter_path=count
@@ -328,20 +315,20 @@ reindex into `totality-full`
 ```json
 POST _reindex
 {
-  "source": { "index": "totality-state-parks",
+  "source": { "index": "totality-state-parks-raw",
     "query": {
       "term": {
-        "gender.keyword": "F"
+        "coverage.keyword": "100%"
       }
     }
   },
-  "dest":   { "index": "totality-full" }
+  "dest":   { "index": "totality-state-parks-full" }
 }
 ```
 
 Check
 ```json
-GET accounts-female/_count?filter_path=count
+GET totality-state-parks-full/_count?filter_path=count
 
 // Output 
 
@@ -352,7 +339,7 @@ GET accounts-female/_count?filter_path=count
 
 Check again (fix this later)
 ```json
-GET /totality-state-parks/_search?filter_path=*.*.*.gender
+GET /totality-state-parks/_search?filter_path=*.*.*.coverage
 
 // Output 
 
@@ -361,12 +348,12 @@ GET /totality-state-parks/_search?filter_path=*.*.*.gender
     "hits" : [
       {
         "_source" : {
-          "gender" : "F"
+          "coverage" : "100%"
         }
       },
       {
         "_source" : {
-          "gender" : "F"
+          "coverage" : "100%"
         }
       },
     ...
@@ -493,9 +480,9 @@ POST _ingest/pipeline/_simulate
       },
       {
         "set": {
-          "tag": "set full_name",
-          "field": "full_name",
-          "value": "{{firstname}} {{lastname}}"
+          "tag": "set full_duration",
+          "field": "full_duration",
+          "value": "{{minutes}}:{{seconds}}"
         }
       },
       {
@@ -596,11 +583,11 @@ PUT _ingest/pipeline/accounts-ingest
 ```
 Then reindex the data with that new pipeline
 ```json
-POST accounts-2021/_update_by_query?pipeline=accounts-ingest
+POST totality-raw/_update_by_query?pipeline=totality-ingest
 ```
 Checking to verify that the data was transformed properly:
 ```json
-POST accounts-raw/_search?filter_path=*.*._id
+POST totality-raw/_search?filter_path=*.*._id
 {
   "size": 1, 
   "query": { 
@@ -641,16 +628,51 @@ POST accounts-raw/_search?filter_path=*.*._id
 > - The format of date values.
 > - Custom rules to control the mapping for dynamically added fields.
 
-:question: 1. Create a new index mapping called `henry4` that matches the following requirements:
+:question: 1. Create a new index mapping called `oklahoma` that matches the following requirements:
 
-- speaker: keyword
+- state: oklahoma
 - line_id: keyword and not aggregateable 
 - speech_number: integer
+```json
+PUT /oklahoma
+{
+ "settings": {
+   "number_of_replicas": 0
+ },
+ "mappings": {
+   "properties": {
+    "speaker": {"type": "keyword"},
+    "line_id": {
+      "type": "keyword",
+      "doc_values": false
+    },
+    "speech_number": {"type": "integer"}
+  }
+ }
+}
+```
 
-<details>
-  <summary>View Solution (click to reveal)</summary>
+2. Using the previous ingested totality-raw index, re-index the data into the new index called oklahoma that only contains the state parks for oklahoma.
+<br>Other options including making it so that this new index has state parks with only 100% coverage.
 
-### Mapping numeric identifiers
+```json
+POST _reindex
+{
+  "source": { 
+    "index": "totality-raw",
+    "query": {
+      "term": {
+        "state": "Oklahoma"
+      }
+    }
+  },
+  "dest":   { "index": "oklahoma" }
+}
+```
+verify that the data only contains HENRY IV play lines.
+### TBD
+
+### Mapping numeric identifiers (need to fix this)
 >Not all numeric data should be mapped as a numeric field data type. Elasticsearch optimizes numeric fields, such as integer or long, for range queries. However, keyword fields are better for term and other term-level queries.
 >
 >Identifiers, such as an ISBN or a product ID, are rarely used in range queries. However, they are often retrieved using term-level queries.
@@ -687,66 +709,17 @@ PUT /henry4
 </details>
 <hr/>
 
-:question: 2. Using the previous ingested `shakespeare` index, re-index the data into the new one called `henry4` that only contains the lines for the play `Henry IV`
-
-<details>
-  <summary>View Solution (click to reveal)</summary>
-
-The best way to do this is to write the term query first, check that contains what you want, then convert the query into the `_reindex`
-
-```json
-POST _reindex
-{
-  "source": { "index": "shakespeare",
-    "query": {
-      "term": {
-        "play_name": "Henry IV"
-      }
-    }
-  },
-  "dest":   { "index": "henry4" }
-}
-
-// output
-
-{
-  "took" : 2844,
-  "timed_out" : false,
-  "total" : 3205,
-  "updated" : 0,
-  "created" : 3205,
-  "deleted" : 0,
-  "batches" : 4,
-  "version_conflicts" : 0,
-  "noops" : 0,
-  "retries" : {
-    "bulk" : 0,
-    "search" : 0
-  },
-  "throttled_millis" : 0,
-  "requests_per_second" : -1.0,
-  "throttled_until_millis" : 0,
-  "failures" : [ ]
-}
-```
-</details>
-<hr/>
-
-3. verify that the data only contains `HENRY IV` play lines.
-
-#TBC
-
 
 ## Define and use a custom analyzer that satisfies a given set of requirements
 and
 ## Define and use multi-fields with different data types and/or analyzers
 
-:question: 1. Write a custom analyzer that changes the name of `PRINCE HENRY` to `WAYWARD PRINCE HAL` in the `speaker` field, add this to a new index called `henry4_hal`
+:question: 1. Write a custom analyzer that changes the name of `State Park` to `WAYWARD PRINCE HAL` in the `name` field, add this to a new index called `henry4_hal`
 
 - Create a new index, 
-- with a mapping on the speaker field 
+- with a mapping on the name field 
 - that utilises an analyser 
-- to rename the princes name if it matches.
+- to rename the st name if it matches.
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -759,13 +732,13 @@ POST _analyze
 {
   "char_filter": {
       "type": "pattern_replace",
-      "pattern": "PRINCE HENRY",
-      "replacement": "WAYWARD PRINCE HAL"
+      "pattern": "State Park",
+      "replacement": "Place To Visit"
   },
   "text": [
-    "PRINCE WILLIAM",
-    "PRINCE HENRY",
-    "PRINCE HARRY"
+    "Stub Stewart State Park",
+    "Very Boring State Park",
+    "Super Exciting State Park"
   ]
 }
 
@@ -800,11 +773,8 @@ POST _analyze
 ```
 
 ## Put it all together
-
 - mappings -> `speaker` -> `"analyzer": "wayward_son_analyser"`
-
 - settings -> analysis -> `"wayward_son_analyser"` -> `"char_filter": ["rename_filter"]`
-
 - `"rename_filter"` -> `"pattern_replace"`
 
 ```json
@@ -814,7 +784,7 @@ PUT /henry4_hal
     "properties": {
       "speaker": {
         "type": "text",
-        "analyzer": "wayward_son_analyser",
+        "analyzer": "state_park_analyser",
         "fields": {
           "keyword": {
             "type": "keyword",
@@ -856,7 +826,7 @@ PUT /henry4_hal
 </details>
 <hr/>
 
-:question: 2. re-index `henry4` into `henry4_hal`
+:question: 2. re-index `totality-all` into `totality-custom-analyzer`
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -864,14 +834,15 @@ PUT /henry4_hal
 ```json
 POST _reindex
 {
-  "source": { "index": "shakespeare",
+  "source": {
+    "index": "totality-all",
     "query": {
       "term": {
         "play_name": "Henry IV"
       }
     }
   },
-  "dest":   { "index": "henry4_hal" }
+  "dest":   { "index": "totality-custom-analyzer" }
 }
 ```
 </details>
@@ -906,11 +877,11 @@ GET henry4_hal/_search
 Now that we have the remote cluster setup, lets perform a cluster search.
 
 ```json
-GET /cluster_one:twitter/_search
+GET /cluster_one:totality-raw/_search
 {
   "query": {
     "match": {
-      "user": "kimchy"
+      "state": "Oklahoma"
     }
   }
 }
@@ -1279,20 +1250,21 @@ GET shakespeare/_search
 ```
 
 ### Pagination 
-Paginate the Totality results, 20 state parks per page, stating from state park 40.
+Paginate the Totality results, 20 state parks per page, stating from state park 40 for the state of New Hampshire.
+This can also be done for the other states in the dataset and sorted by zipcode or coverage.
 ```json
-GET {template}/_search
+GET totality-all/_search
 {
     "size": 20,
     "from": 40,
     "query": {
         "term": {
-            "play_name": "Othello"
+            "state": "New Hampshire"
           }
     }, 
     "sort": [
       {
-        "speech_number": {
+        "coverage": {
           "order": "asc"
         }
       }
