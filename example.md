@@ -145,7 +145,8 @@ PUT _template/totality_2024-tmpl
     "street_address" :  { "type": "keyword" },
     "city" :  { "type": "keyword" },    
     "state" :  { "type": "keyword" },
-    "zip_code" :  { "type": "keyword" }    
+    "state_code" :  { "type": "keyword" },
+    "zip_code" :  { "type": "keyword" },    
     "coverage" :  { "type": "keyword" },
     "eclipse_date" :  { "type": "date" },
     "totality_minutes" :  { "type": "integer" },
