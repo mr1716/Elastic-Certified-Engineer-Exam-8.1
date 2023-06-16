@@ -53,7 +53,7 @@ Steps:
 Follow the steps at to configure the cluster <br>
 https://kifarunix.com/setup-multi-node-elasticsearch-cluster
 
-### Check Cluster Health
+### Check Cluster Health \*
 Check The Cluster Health to verify that the cluster is properly configured.
 
 ```json
@@ -63,7 +63,7 @@ OR
 ```json
 GET _cat/health?v
 ```
-### Find Broken Indices
+### Find Broken Indices \*
 Find broken indices by checking them all, or which ones are red, yellow, and green.
 To do this, ensure that index that you created is NOT broken and is green!
 
@@ -110,6 +110,9 @@ Searchable snapshots eliminate the need for replica shards, potentially halving 
 xpack.searchable.snapshot.shared_cache.size=100mb
 ```
 
+### Cross Cluster Replication
+(how is this done? insert here)
+
 ## Uploading the Data
 Now that the environment is configured, they are confirmed to be healthy, and everything is saved to a snapshot, lets create an index and index template before we upload the data!
 ### Define an index that satisfies a given set of requirements
@@ -125,7 +128,9 @@ Insert explanation here
 ```
 
 ### Define and use an index template for a given pattern that satisfies a given set of requirements
-Insert explanation here
+What we will do is create several different index template
+Create an index for totality for everything. And for each state
+
 ```json
 PUT _template/totality_2024-tmpl
 {
@@ -165,71 +170,6 @@ Why use a dynamic template
 3rd for just a 2nd state on a client node
 
 The reason for this is to be able to practice with cross cluster replication and cross cluster search!
-### Perform a remote cluster search
-
-```json
-GET /cluster_one:twitter/_search
-{
-  "query": {
-    "match": {
-      "user": "kimchy"
-    }
-  }
-}
-```
-
-### Perform a multiple cross cluster search
-
-```json
-GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
-{
-  "query": {
-    "match": {
-      "user": "kimchy"
-    }
-  }
-}
-```
-### Cross Cluster Replication
-(how is this done? insert here)
-
-## Asynchronous Search
--Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
-
-### Write an asynchronous search to sort by timestamp:
-```json
-
-POST /{insert index here}/_async_search?size=0
-{
-  "sort": [
-    { "@timestamp": { "order": "asc" } }
-  ],
-  "aggs": {
-    "sale_date": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "calendar_interval": "1d"
-      }
-    }
-  }
-}
-```
-
-### Get Asynchronous Search Details
-```json
-GET /_async_search/{id}=
-```
-
-### Get Asynchronous Search Status
-```json
-GET /_async_search/status/{id}
-```
-
-### Delete An Asynchronous Search
-```json
-DELETE /_async_search/{id}
-```
-
 
 ### Define and use index aliases
 ### part 1
@@ -342,9 +282,7 @@ POST accounts-raw/_search?filter_path=hits.total.value
     }
   }
 }
-
 // Output 
-
 {
   "hits" : {
     "total" : {
@@ -485,8 +423,6 @@ POST accounts-2021/_update_by_query
     }
   }
 }
-
-
 // Output
 
 {
@@ -508,7 +444,6 @@ POST accounts-2021/_update_by_query
   "failures" : [ ]
 }
 ```
-
 Get those same ids again to check the balances have increased
 ```json
 GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
@@ -536,17 +471,6 @@ GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
 
 </details>
 <hr>
-### Write and execute a search that utilizes a runtime field
-In this instance, we will create a runtime field that will take the existing fields minutes and seconds, and turn them into a field called seconds_per_site. 
-
-Other runtime fields could include:
-- Create a field called state_code that takes the state name and abbreviates it. Such as New Hampshire to NH, and VT for Vermont. 
-
-Step 2 Perform the searcb
-It could be either:
-1) Search for fields with more than 200 seconds of converted totality time.
-2) Search for all of the state parks with the state_code of NH
- 
 
 ### Define and use an ingest pipeline that satisfies a given set of requirements, including the use of Painless to modify documents
 :question: Apply a pipeline called `longest-time` to the data in `state-parks` with the following requirements:
@@ -976,6 +900,84 @@ GET henry4_hal/_search
 </details>
 <hr/>
 
+# Search Related Activity
+
+### Perform a remote cluster search
+Now that we have the remote cluster setup, lets perform a cluster search.
+
+```json
+GET /cluster_one:twitter/_search
+{
+  "query": {
+    "match": {
+      "user": "kimchy"
+    }
+  }
+}
+```
+### Perform a multiple cross cluster search
+
+```json
+GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
+{
+  "query": {
+    "match": {
+      "user": "kimchy"
+    }
+  }
+}
+``` 
+
+## Asynchronous Search
+-Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
+
+### Write an asynchronous search to sort by timestamp
+```json
+
+POST /{insert index here}/_async_search?size=0
+{
+  "sort": [
+    { "@timestamp": { "order": "asc" } }
+  ],
+  "aggs": {
+    "sale_date": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "calendar_interval": "1d"
+      }
+    }
+  }
+}
+```
+
+### Get Asynchronous Search Details
+```json
+GET /_async_search/{id}=
+```
+
+### Get Asynchronous Search Status
+```json
+GET /_async_search/status/{id}
+```
+
+### Delete An Asynchronous Search
+```json
+DELETE /_async_search/{id}
+```
+
+### Write and execute a search that utilizes a runtime field
+In this instance, we will create a runtime field that will take the existing fields minutes and seconds, and turn them into a field called seconds_per_site. 
+
+Other runtime fields could include:
+- Create a field called state_code that takes the state name and abbreviates it. Such as New Hampshire to NH, and VT for Vermont. 
+
+Step 2 Perform the searcb
+It could be either:
+1) Search for fields with more than 200 seconds of converted totality time.
+2) Search for all of the state parks with the state_code of NH
+ 
+## Performing Searches
+
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
 
 How many times do the words New Hanpshire appear in the eclipse data
@@ -1234,7 +1236,7 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
   }
 }
 ```
-### Developing Search Applications
+## Developing Search Applications
 ### Highlight the search terms in the response of a query
 In the New Hampshire parks, highlight the Name starting the highlight with "#aaa# and ending it with #bbb#
 ```json
@@ -1588,6 +1590,7 @@ GET henry4_r/_search?filter_path=*.*.*.name
 
 </details>
 <hr/>
+
 ### Define an Index Lifecycle Management policy for a time-series index 
 <b> This isnt necessarily specific to this but is inportant to setup</b>
 Example from Rich Raposa (Elastic Exam video):<br>
