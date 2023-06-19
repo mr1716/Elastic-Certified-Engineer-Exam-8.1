@@ -1010,8 +1010,6 @@ GET shakespeare/_search
   }
 }
 ```
-
-How many times is "New York" mentioned as a state?
 How many state parks are in the path of totality?
 ```json
 GET state_parks_totality_2024/_search
@@ -1024,7 +1022,7 @@ GET state_parks_totality_2024/_search
 }
 ```
 
-How many places have New York as the state or name
+How many places have Vermont, Maine, New Hampshire, or Oklahoma as the state?
 ```json
 GET shakespeare/_search
 {
@@ -1037,7 +1035,7 @@ GET shakespeare/_search
   }
 }
 ```
-How many have totality between 3 and 5 minutes?
+How many have totality minutes between 3 and 5?
 ```json
 GET shakespeare/_search
 {
@@ -1052,7 +1050,7 @@ GET shakespeare/_search
 }
 ```
 
-How many are in the path of totality but lack camping? (do or domt have camping
+How many are in the path of totality but lack time? (do or domt have camping)
 ```json
 GET shakespeare/_search
 {
@@ -1125,8 +1123,9 @@ How many states are in totality (count unique state field)
 What we will do is use the index aliases and created indexes so far to perform aggregations!
 
 ### Metric Aggregations
-Aggregations of things such as coverage??
-Pull the number of sales, Max, Min, Average and total sales for the American customers.
+Some options include but not limited to:
+- Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of 
+
 ```json
 GET {solar eclipse}/_search?filter_path=aggregations
 {
@@ -1337,9 +1336,12 @@ GET ny_parks_index,remote_cluster1:nh_parks_index,remote_cluster2:tx_parks_index
 ### Define and use a search template
 A search template is a stored search you can run with different variables.
 
-:question: Create and use a search template that returns the lines of a person in a play.
-
-:question: Show all lines that belong to `Attendant` in the play `Cymbeline`
+:question: Create and use a search template that returns the number of a state parks in totality. (100% coverage)
+#### Bonus
+- Create and use a search template that returns the number of a state parks in totality for a specific state (100% coverage)
+- Create and use a search template that returns the number of a state parks in totality for a specific zipcode
+- 
+:question: Show all state parks that are in the state of `Vermont` that are in totality
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -1441,7 +1443,7 @@ GET shakespeare/_search/template?filter_path=hits.hits.*.text_entry
 ```json
 PUT totality_r/_doc/_bulk
 {"index":{"_index":"totality_r","_id":"0"}}
-{"name":"Texas","relationship":[{"name":"STATE","type":"first"}]}
+{"name":"zipcode","relationship":[{"name":"statepark","type":"zipcode"}]}
 {"index":{"_index":"henry4_r","_id":"1"}}
 {"name":"FALSTAFF","relationship":[{"name":"PRINCE HENRY","type":"friend"}]}
 {"index":{"_index":"henry4_r","_id":"2"}}
@@ -1543,7 +1545,7 @@ GET totality_r/_search
 </details>
 <hr/>
 
-:question: 3. Show all friends of `FALSTAFF`
+:question: 3. Show all state parks in the specific and neighboring zip codes.
 
 
 <details>
