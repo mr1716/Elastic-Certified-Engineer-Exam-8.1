@@ -128,6 +128,41 @@ Insert explanation here
 What we will do is create several different index template
 Create an index for totality for everything. And for each state
 
+
+Question: Create a template for the state parks that includes:
+name, street address, city, state, zipcode, coverage %, eclipse date, totality minutes, totality seconds, start time, maximum totality time, and end of the totality time.
+```json
+PUT _template/totality_2024-tmpl
+{
+  "index_patterns": ["totality_2024-*"],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "_source": {
+      "enabled": false
+    },
+    "properties": {
+    "name" :  { "type": "keyword" },
+    "street_address" :  { "type": "keyword" },
+    "city" :  { "type": "keyword" },    
+    "state" :  { "type": "keyword" },
+    "zip_code" :  { "type": "keyword" },    
+    "coverage" :  { "type": "keyword" },
+    "eclipse_date" :  { "type": "date" },
+    "totality_minutes" :  { "type": "integer" },
+    "totality_seconds" :  { "type": "integer" },
+    "start_time" :  { "type": "text" },
+    "max_time" :  { "type": "text" },
+    "end_time" :  { "type": "text" }
+    }
+  }
+}
+```
+Bonus/Other Questions:
+Question: Create a template for the state parks that includes:
+name, street address, city, state, state abbreviation, zipcode, coverage %, eclipse date, totality minutes, totality seconds, start time, maximum totality time, and end of the totality time.
 ```json
 PUT _template/totality_2024-tmpl
 {
