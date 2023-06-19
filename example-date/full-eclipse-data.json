@@ -2314,7 +2314,7 @@
    "city": "Wagoner",
    "state": "Oklahoma",
    "zip_code": "74467",
-   "timezone: "CDT",   
+   "timezone": "CDT", 
    "coverage": "97.31%",
    "eclipse_date": "2024-04-08",
    "totality_minutes": 0,
@@ -2689,7 +2689,7 @@
    "city": "Saco",
    "state": "Maine",
    "zip_code": "04072",
-   "timezone": "EDT"
+   "timezone": "EDT",
    "coverage": "96.05%",
    "eclipse_date": "2024-04-08",
    "totality_minutes": 0,
@@ -2704,7 +2704,7 @@
    "city": "Newry",
    "state": "Maine",
    "zip_code": "04261",
-   "timezone": "EDT"   
+   "timezone": "EDT",   
    "coverage": "99.92%",
    "eclipse_date": "2024-04-08",
    "totality_minutes": 0,
