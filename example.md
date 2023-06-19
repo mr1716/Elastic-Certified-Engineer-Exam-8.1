@@ -16,11 +16,6 @@ The docker instance for 8.1.0 can be found at: https://hub.docker.com/layers/lib
 2) Manually Install <br>
 To install Elasticsearch on a system such as VM or laptop or desktop, download the release from Elasticsearch, ensure that the required version of Java and other required software dependencies are installed, and then install and start Elasticsearch. https://www.elastic.co/downloads/past-releases/elasticsearch-8-1-0
 
-### Uploading The File/Data
-The file named solar_eclipse_2024.json has the data we're going to use. It is found [here](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/solar_eclipse_2024.json) <br>
-To upload this into elasticsearch, run: <br>
-$ curl -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/shakespeare/_bulk --data-binary "@shakespeare_6.0.json"; echo
-
 
 ## Lets Get Started:
 This example will walk you through the majority of the Elasticsearch Certified Engineer Exam using some 2024 solar eclipse totality information for state parks. This will start with setting up multiple clusters, which wont be necessary for the exam, since all you will need to do is start the systems. 
@@ -193,14 +188,18 @@ PUT _template/totality_2024-tmpl
   }
 }
 ```
+
 ### Define and use a dynamic template that satisfies a given set of requirements
 Why use a dynamic template
 
 ### Lets Upload The Data
-3 uploads:
-1st for general data on the master node.
-2nd for just 1 state on the master node
-3rd for just a 2nd state on a client node
+If running this in a single node environment, use the file named full-eclipse-data.json for the examples. It makes performing the examples significantly easier. Plus, the examples were designed for that purpose. A cross-cluster implementation will be implemented later. Will require copying the work done to the other clusters. <br>
+The file named full-eclipse-data.json has all of the data we're going to use. It is found [here]([https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/solar_eclipse_2024.json](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/full-eclipse-data.json)) <br> 
+
+To find the data broken down by state into each line, check out the file unique-clusters.json [here](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/unique-clusters.json) <br> The benefit of this is that is broken down by each state each line. DO NOT attempt to upload this as 1 file. It is meant to be used to upload 1 line per cluster and provide the benfits of cross cluster search. <br>
+
+To upload this into elasticsearch, run: <br>
+$ curl -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/totality_info/_bulk --data-binary "@full-eclipse-data.json"; echo
 
 The reason for this is to be able to practice with cross cluster replication and cross cluster search!
 
