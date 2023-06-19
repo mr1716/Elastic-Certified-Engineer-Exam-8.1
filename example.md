@@ -156,7 +156,7 @@ PUT _template/totality_2024-tmpl
 }
 ```
 Bonus/Other Questions:
-Question: Create a template for the state parks that includes:
+Question: Create a template for the state parks that are in totality includes:
 name, street address, city, state, state abbreviation, zipcode, coverage %, eclipse date, totality minutes, totality seconds, start time, maximum totality time, and end of the totality time.
 ```json
 PUT _template/totality_2024-tmpl
@@ -175,15 +175,17 @@ PUT _template/totality_2024-tmpl
     "street_address" :  { "type": "keyword" },
     "city" :  { "type": "keyword" },    
     "state" :  { "type": "keyword" },
-    "state_code" :  { "type": "keyword" },
+    "timezone" : { "type": "keyword" },
     "zip_code" :  { "type": "keyword" },    
     "coverage" :  { "type": "keyword" },
     "eclipse_date" :  { "type": "date" },
     "totality_minutes" :  { "type": "integer" },
     "totality_seconds" :  { "type": "integer" },
-    "start_time" :  { "type": "text" },
-    "max_time" :  { "type": "text" },
-    "end_time" :  { "type": "text" }
+    "partial_start_time" :  { "type": "date" },
+    "totality_start_time" :  { "type": "date" },      
+    "max_time" :  { "type": "date" },
+    "totality_end_time" :  { "type": "date" },            
+    "partial_end_time" :  { "type": "date" }
     }
   }
 }
@@ -230,7 +232,7 @@ Check that the document count matches using GET totality-all/_count
 :question: Define an index alias for `totality-raw` called `totality-full`
 
 :question: Apply a filter to only show the state parks where the totality is 100%.
-Alternatives include aliases for each state, zipcode, 
+Alternatives include aliases for each state, zipcode, states with totality of X minutes, or Timezones.
 
 1. check that the field you want to filter is a keyword
 ```json
@@ -393,7 +395,7 @@ GET /totality-state-parks/_search?filter_path=*.*.*.coverage
 </details>
 
 ### Part 2
-:question: Give all female account holders in `accounts-2021` a 25% bonus increase on their balance :)
+:question: Give all state parks with 100% coverage in `totality-raw` a 25% bonus increase on their total time (just for the sake of this example) :)
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -487,16 +489,19 @@ GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
   ]
 }
 ```
-
+:question: Give all state parks with 100% coverage in `totality-raw` a 20% decrease on their total time to return to their normal values
+(repeat process from above)
 </details>
 <hr>
 
 ### Define and use an ingest pipeline that satisfies a given set of requirements, including the use of Painless to modify documents
-:question: Apply a pipeline called `longest-time` to the data in `state-parks` with the following requirements:
+:question: Apply a pipeline called `all-pipelines` to the data in `state-parks` with the following requirements: (these are all possible options, but do as many as necessary to gain an understanding of ingest pipelines conceptually, how they work, their syntax, and how to write them.
 
 - Add a `tag` called `pipeline_ingest` to show that the document was ingested via the pipeline 
-- Add the date field to the start, maximum, and end times to provide a full ISO time field in the format of YYYY-MM-DD... and add that to the field that it was received from
-- Calculate the amount of total seconds in totality and add it to a new field called full_totality_time 
+- Change the start, max, and end times from the applicable timezone to UTC (and replace the values)
+- Calculate the amount of total seconds in totality and add it to a new field called full_totality_time
+- Ensure that every park has 'State Park' in their name. If not, then add it to the name.
+- For those state parks with 100% coverage, add in 2 new fields: totality_start_time and totality_end_time. These values are calculated by taking the max_time and adding/subtracting 1/2 of the totality time. An example of this is if there is 2 minutes of totality and maximum totality occurs at 1:05pm, then totality_start_time would be 1:04pm and totality_end_time would be 1:06pm.
 
 Then reindex the data with that new pipeline
 ```json
@@ -745,8 +750,9 @@ PUT /henry4
 ## Define and use a custom analyzer that satisfies a given set of requirements
 and
 ## Define and use multi-fields with different data types and/or analyzers
+Alternatives include renaming the states or cities, or something else.
 
-:question: 1. Write a custom analyzer that changes the name of `State Park` to `WAYWARD PRINCE HAL` in the `name` field, add this to a new index called `henry4_hal`
+:question: 1. Write a custom analyzer that changes the name of `State Park` to `State Designated Outside Place` in the `name` field, add this to a new index called `funny_name_analyzer`
 
 - Create a new index, 
 - with a mapping on the name field 
@@ -765,7 +771,7 @@ POST _analyze
   "char_filter": {
       "type": "pattern_replace",
       "pattern": "State Park",
-      "replacement": "Place To Visit"
+      "replacement": ""
   },
   "text": [
     "Stub Stewart State Park",
@@ -919,7 +925,7 @@ GET /cluster_one:totality-raw/_search
 }
 ```
 ### Perform a multiple cross cluster search
-
+Example of this
 ```json
 GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
 {
@@ -969,16 +975,22 @@ DELETE /_async_search/{id}
 ```
 
 ### Write and execute a search that utilizes a runtime field
-In this instance, we will create a runtime field that will take the existing fields minutes and seconds, and turn them into a field called seconds_per_site. 
+In this instance, we will create a runtime field that will take the existing fields minutes and seconds, and turn them into a field called seconds_per_site. Therefore, 1 minute and 30 seconds would become 90 seconds for the seconds_per_site field.
 
-Other runtime fields could include:
-- Create a field called state_code that takes the state name and abbreviates it. Such as New Hampshire to NH, and VT for Vermont. 
+Other runtime fields could include, but are not limited to:
+- Create a field called state_code that takes the state name and abbreviates it. Such as shortening New Hampshire NH, and VT for Vermont.
+- Create a field describing whether the total length of totality is not applicable, long, short, or medium in time.
+- How many state parks have the same zipcode (parks_in_zipcode)
+- How many state parks are in the same state (parks_in_state)
+- How many state parks are in the same city (parks_in_city)
 
-Step 2 Perform the searcb
-It could be either:
-1) Search for fields with more than 200 seconds of converted totality time.
-2) Search for all of the state parks with the state_code of NH
- 
+Step 2 Perform the search
+The search could be:
+How many have seconds_per_site above a specific value such as 200.
+
+Bonus Options:
+Search for state parks where the value (parks_in_city, parks_in_zipcode, or parks_in_state) are above 2.
+
 ## Performing Searches
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
@@ -1113,7 +1125,7 @@ How many states are in totality (count unique state field)
 What we will do is use the index aliases and created indexes so far to perform aggregations!
 
 ### Metric Aggregations
-
+Aggregations of things such as coverage??
 Pull the number of sales, Max, Min, Average and total sales for the American customers.
 ```json
 GET {solar eclipse}/_search?filter_path=aggregations
@@ -1143,6 +1155,11 @@ Other bucket aggregations applicable to this data include: <br>
 
 ### Bucket Aggregations
 Display number of sites per state
+Display number of sites per coverage %
+Display number of sites per zip code
+Display number of sites per city
+Display number of sites per totality minutes
+
 ```json
 GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 {
@@ -1177,7 +1194,8 @@ Display total totality minutes broken down by state
 
 Basially here, you create each aggregation separately and then combine in the end.
 
-Date histogram for the totality start times
+One option is to create a date histogram for the latest totality start time on the day of the eclipse.
+
 ```json
 GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 {
@@ -1416,8 +1434,7 @@ GET shakespeare/_search/template?filter_path=hits.hits.*.text_entry
 </details>
 <hr>
 
-# The following are not necessarily tied into this. But work.
-
+## Slightly off topic, but on the exam!
 ## Configure an index so that it properly maintains the relationships of nested arrays of objects <br>
 :question: 1. Using the below data, create an index with a mapping that allows for relationships to be queried.
 
