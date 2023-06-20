@@ -691,6 +691,7 @@ PUT /oklahoma
 
 2. Using the previous ingested totality-raw index, re-index the data into the new index called oklahoma that only contains the state parks for oklahoma.
 <br>Other options including making it so that this new index has state parks with only 100% coverage.
+<br>There are ways to do this to ensure that
 
 ```json
 POST _reindex
@@ -706,8 +707,9 @@ POST _reindex
   "dest":   { "index": "oklahoma" }
 }
 ```
-verify that the data only contains HENRY IV play lines.
+verify that the data only contains Oklahoma State Parks
 ### TBD
+
 
 ### Mapping numeric identifiers (need to fix this)
 >Not all numeric data should be mapped as a numeric field data type. Elasticsearch optimizes numeric fields, such as integer or long, for range queries. However, keyword fields are better for term and other term-level queries.
@@ -725,14 +727,14 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/doc-values.html
 
 
 ```json
-PUT /henry4
+PUT /totality_numeric_id
 {
  "settings": {
    "number_of_replicas": 0
  },
  "mappings": {
    "properties": {
-    "speaker": {"type": "keyword"},
+    "state": {"type": "keyword"},
     "line_id": {
       "type": "keyword",
       "doc_values": false
@@ -995,8 +997,14 @@ Search for state parks where the value (parks_in_city, parks_in_zipcode, or park
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
 
-How many times do the words New Hanpshire appear in the eclipse data
-How many times do the words New and Hampshire appear in the eclipse data
+How many times do the words New Hanpshire appear in the eclipse data?
+How many times do the words New and Hampshire appear in the eclipse data?
+How many state parks have 100% coverage? (in totality)
+How many state parks in Vermont are in the path of totality?
+How many places have Vermont, Maine, New Hampshire, or Oklahoma as the state?
+How many have totality minutes between 3 and 5 minutes?
+
+
 ```json
 GET shakespeare/_search
 {
@@ -1010,7 +1018,6 @@ GET shakespeare/_search
   }
 }
 ```
-How many state parks are in the path of totality?
 ```json
 GET state_parks_totality_2024/_search
 {
@@ -1022,7 +1029,6 @@ GET state_parks_totality_2024/_search
 }
 ```
 
-How many places have Vermont, Maine, New Hampshire, or Oklahoma as the state?
 ```json
 GET shakespeare/_search
 {
@@ -1035,7 +1041,6 @@ GET shakespeare/_search
   }
 }
 ```
-How many have totality minutes between 3 and 5?
 ```json
 GET shakespeare/_search
 {
@@ -1049,8 +1054,6 @@ GET shakespeare/_search
   }
 }
 ```
-
-How many are in the path of totality but lack time? (do or domt have camping)
 ```json
 GET shakespeare/_search
 {
@@ -1080,7 +1083,6 @@ GET shakespeare/_search
   }
 }
 ```
-Filter the previous result to only show items that are not state parks? (or are)
 ```json
 GET shakespeare/_search
 {
@@ -1124,7 +1126,7 @@ What we will do is use the index aliases and created indexes so far to perform a
 
 ### Metric Aggregations
 Some options include but not limited to:
-- Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of 
+- Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of total numnber of parks.
 
 ```json
 GET {solar eclipse}/_search?filter_path=aggregations
@@ -1186,6 +1188,7 @@ Other bucket aggregations applicable to this data include: <br>
 - Filter based upon coverage
 
 ### Write and execute aggregations that contain sub-aggregations
+
 Display total totality minutes broken down by state
 - The date_histogram is the Y-axis
 - Then you need to group by category
