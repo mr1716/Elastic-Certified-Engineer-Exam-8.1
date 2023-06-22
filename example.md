@@ -282,7 +282,7 @@ POST /_aliases
         "alias": "totality-full",
         "filter": {
           "term": {
-            "coverage.keyword": "100"
+            "coverage.keyword": "100%"
           }
         }
       }
@@ -299,7 +299,7 @@ GET totality-full/_count
 // Output 
 
 {
-  "count" : ??,
+  "count" : 50,
   "_shards" : {
     "total" : 1,
     "successful" : 1,
