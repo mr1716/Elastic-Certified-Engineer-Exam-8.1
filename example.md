@@ -997,12 +997,12 @@ Search for state parks where the value (parks_in_city, parks_in_zipcode, or park
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
 
-How many times do the words New Hanpshire appear in the eclipse data?
-How many times do the words New and Hampshire appear in the eclipse data?
-How many state parks have 100% coverage? (in totality)
-How many state parks in Vermont are in the path of totality?
-How many places have Vermont, Maine, New Hampshire, or Oklahoma as the state?
-How many have totality minutes between 3 and 5 minutes?
+How many times do the words New Hanpshire appear in the eclipse data? <br>
+How many times do the words New and Hampshire appear in the eclipse data? <br>
+How many state parks have 100% coverage? (in totality) <br>
+How many state parks in Vermont are in the path of totality? <br>
+How many places have Vermont, Maine, New Hampshire, or Oklahoma as the state? <br>
+How many have totality minutes between 3 and 5 minutes? <br>
 
 
 ```json
@@ -1155,11 +1155,11 @@ Other bucket aggregations applicable to this data include: <br>
 - Min totality time
 
 ### Bucket Aggregations
-Display number of sites per state
-Display number of sites per coverage %
-Display number of sites per zip code
-Display number of sites per city
-Display number of sites per totality minutes
+Display number of sites per state <br>
+Display number of sites per coverage % <br>
+Display number of sites per zip code <br>
+Display number of sites per city <br>
+Display number of sites per totality minutes <br>
 
 ```json
 GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
@@ -1188,10 +1188,12 @@ Other bucket aggregations applicable to this data include: <br>
 - Filter based upon coverage
 
 ### Write and execute aggregations that contain sub-aggregations
-
+There are several different sub-aggregations that we can run.
+- Longest state park totality time?
+- 
 Display total totality minutes broken down by state
-- The date_histogram is the Y-axis
-- Then you need to group by category
+- The date_histogram is the Y-axis (time)
+- Then you need to group by l
 - Then Sum the sales (X-axis)
 
 Basially here, you create each aggregation separately and then combine in the end.
