@@ -1188,13 +1188,20 @@ Other bucket aggregations applicable to this data include: <br>
 - Filter based upon coverage
 
 ### Write and execute aggregations that contain sub-aggregations
-There are several different sub-aggregations that we can run.
-- Longest state park totality time?
-- 
-Display total totality minutes broken down by state
-- The date_histogram is the Y-axis (time)
-- Then you need to group by l
-- Then Sum the sales (X-axis)
+There are several different sub-aggregations that we can run. These are just examples, and not representative of everything that could be done for sub-aggregations for this data.
+- Which state park in totality has the longest total number of minutes for State X?
+- Which state park in totality has the shortes total number of minutes for State X?
+- Which state park in totality has the shortes total totality time for State X?
+- Which state park in totality has the shortest total totality time for State X?
+- What is the average totality minutes for State X?
+- What is the average totality seconds for State X?
+- What is the average totality time for State X for all state parks?
+- What is the average totality time for State X for all state parks with 100% totality?
+https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html#run-sub-aggs
+To do any one of the examples above, the high level way to do this would be to:
+- Create an aggregation using the state field
+- Group that aggregation where the coverage is equal to 100%
+- Then finally, 
 
 Basially here, you create each aggregation separately and then combine in the end.
 
@@ -1448,41 +1455,19 @@ GET shakespeare/_search/template?filter_path=hits.hits.*.text_entry
 ```json
 PUT totality_r/_doc/_bulk
 {"index":{"_index":"totality_r","_id":"0"}}
-{"name":"zipcode","relationship":[{"name":"statepark","type":"zipcode"}]}
-{"index":{"_index":"henry4_r","_id":"1"}}
-{"name":"FALSTAFF","relationship":[{"name":"PRINCE HENRY","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"2"}}
-{"name":"HOTSPUR","relationship":[{"name":"PRINCE HENRY","type":"foe"}]}
-{"index":{"_index":"henry4_r","_id":"3"}}
-{"name":"WESTMORELAND","relationship":[{"name":"KING HENRY IV","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"4"}}
-{"name":"WESTMORELAND","relationship":[{"name":"KING HENRY IV","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"5"}}
-{"name":"EARL OF WORCESTER","relationship":[{"name":"KING HENRY IV","type":"foe"}]}
-{"index":{"_index":"henry4_r","_id":"6"}}
-{"name":"GLENDOWER","relationship":[{"name":"KING HENRY IV","type":"foe"}]}
-{"index":{"_index":"henry4_r","_id":"7"}}
-{"name":"EARL OF DOUGLAS","relationship":[{"name":"KING HENRY IV","type":"foe"}]}
-{"index":{"_index":"henry4_r","_id":"8"}}
-{"name":"MORTIMER","relationship":[{"name":"KING HENRY IV","type":"foe"}]}
-{"index":{"_index":"henry4_r","_id":"9"}}
-{"name":"VERNON","relationship":[{"name":"EARL OF WORCESTER","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"10"}}
-{"name":"NORTHUMBERLAND","relationship":[{"name":"HOTSPUR","type":"father"}, {"name":"KING HENRY IV","type":"foe"}]}
-{"index":{"_index":"henry4_r","_id":"11"}}
-{"name":"SIR WALTER BLUNT","relationship":[{"name":"KING HENRY IV","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"12"}}
-{"name":"GADSHILL","relationship":[{"name":"PRINCE HENRY","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"13"}}
-{"name":"ARCHBISHOP OF YORK","relationship":[{"name":"KING HENRY IV","type":"foe"}]}
-{"index":{"_index":"henry4_r","_id":"14"}}
-{"name":"POINS","relationship":[{"name":"FALSTAFF","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"15"}}
-{"name":"BARDOLPH","relationship":[{"name":"FALSTAFF","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"16"}}
-{"name":"PETO","relationship":[{"name":"FALSTAFF","type":"friend"}]}
-{"index":{"_index":"henry4_r","_id":"17"}}
-{"name":"PRINCE HENRY","relationship":[{"name":"FALSTAFF","type":"friend"}, {"name":"PETO","type":"friend"},{"name":"BARDOLPH","type":"friend"},{"name":"POINS","type":"friend"},{"name":"GADSHILL","type":"friend"}]}
+{"name":"X State Park","relationship":[{"camping":"Yes","neighbor":"Y State Park"}]}
+{"index":{"_index":"totality_r","_id":"1"}}
+{"name":"Y State Park","relationship":[{"camping":"No","neighbor":"Z State Park"}]}
+{"index":{"_index":"totality_r","_id":"2"}}
+{"name":"Z State Park","relationship":[{"camping":"Yes","neighbor":"A State Park"}]}
+{"index":{"_index":"totality_r","_id":"3"}}
+{"name":"A State Park","relationship":[{"camping":"Yes","neighbor":"X State Park"}]}
+{"index":{"_index":"totality_r","_id":"4"}}
+{"name":"B State Park","relationship":[{"camping":"No","type":"X State Park"}]}
+{"index":{"_index":"totality_r","_id":"5"}}
+{"name":"C State Park","relationship":[{"camping":"No","type":"Y State Park"}]}
+{"index":{"_index":"totality_r","_id":"6"}}
+{"name":"D State Park","relationship":[{"camping":"No","type":"Z State Park"}]}
 ```
 
 <details>
@@ -1508,7 +1493,7 @@ PUT totality_r
 </details>
 <hr/>
 
-:question: 2. Then query all items in the index that are the `first` of `STATE`
+:question: 2. Then query all items in the index that are the `neighbors` of `A State park` and have 'camping' set to 'Yes'
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -1524,8 +1509,8 @@ GET totality_r/_search
       "query": {
         "bool": {
           "must": [
-            { "match": { "relationship.name": "STATE" }},
-            { "match": { "relationship.type":  "first" }} 
+            { "match": { "relationship.camping": "Yes" }},
+            { "match": { "relationship.type":  "A State Park" }} 
           ]
         }
       }
@@ -1550,7 +1535,7 @@ GET totality_r/_search
 </details>
 <hr/>
 
-:question: 3. Show all state parks in the specific and neighboring zip codes.
+:question: 3. Show all state parks that have camping set to Yes and neighbor set to Y State Park.
 
 
 <details>
@@ -1577,8 +1562,8 @@ GET henry4_r/_search?filter_path=*.*.*.name
       "query": {
         "bool": {
           "must": [
-            { "match": { "relationship.name": "FALSTAFF" }},
-            { "match": { "relationship.type":  "friend" }} 
+            { "match": { "relationship.camping": "Yes" }},
+            { "match": { "relationship.neighbor":  "Y State Park" }} 
           ]
         }
       }
