@@ -756,10 +756,13 @@ Alternatives include renaming the states or cities, or something else.
 
 :question: 1. Write a custom analyzer that changes the name of `State Park` to `State Designated Outside Place` in the `name` field, add this to a new index called `funny_name_analyzer`
 
-- Create a new index, 
+- Create a new index
 - with a mapping on the name field 
 - that utilises an analyser 
 - to rename the st name if it matches.
+
+:question: 2. Write a custom analyzer that changes the name of `State Park` to `State Designated Outside Place` in the `name` field, add this to a new index called `funny_name_analyzer`
+
 
 <details>
   <summary>View Solution (click to reveal)</summary>
