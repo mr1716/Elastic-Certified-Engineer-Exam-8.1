@@ -326,7 +326,7 @@ POST totality-raw/_search?filter_path=hits.total.value
 {
   "hits" : {
     "total" : {
-      "value" : ??
+      "value" : 50
     }
   }
 }
@@ -357,21 +357,20 @@ GET totality-state-parks/_count?filter_path=count
 // Output 
 
 {
-  "count" : 1000
+  "count" : 187
 }
 ```
 
 reindex into `totality-full`
 
 :bulb: do the term query first, then once you are happy with the output, convert it into a `_reindex`
-
 ```json
 POST _reindex
 {
   "source": { "index": "totality-state-parks-raw",
     "query": {
-      "term": {
-        "coverage.keyword": "100%"
+      "match": {
+        "coverage": "100%"
       }
     }
   },
@@ -386,13 +385,13 @@ GET totality-state-parks-full/_count?filter_path=count
 // Output 
 
 {
-  "count" : ??
+  "count" : 50
 }
 ```
 
 Check again (fix this later)
 ```json
-GET /totality-state-parks/_search?filter_path=*.*.*.coverage
+GET /totality-state-parks-full/_search?filter_path=*.*.*.coverage
 
 // Output 
 
