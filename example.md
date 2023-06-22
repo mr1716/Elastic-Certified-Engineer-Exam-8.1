@@ -190,6 +190,8 @@ PUT _template/totality_2024-tmpl
   }
 }
 ```
+#### Create Index Pattern
+This is to allow for creation of the pattern for use in Kibana
 
 ### Define and use a dynamic template that satisfies a given set of requirements
 What we can do is use a dynamic template to define the totality minutes and seconds fields as longs, from integers.
