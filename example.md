@@ -192,8 +192,25 @@ PUT _template/totality_2024-tmpl
 ```
 
 ### Define and use a dynamic template that satisfies a given set of requirements
-Why use a dynamic template
-
+What we can do is use a dynamic template to define the totality minutes and seconds fields as longs, from integers.
+```json
+PUT my-index-000001
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "longs_as_strings": {
+          "match_mapping_type": "integer",
+          "match":   "totality_*",
+          "mapping": {
+            "type": "long"
+          }
+        }
+      }
+    ]
+  }
+}
+```
 ### Lets Upload The Data
 If running this in a single node environment, use the file named full-eclipse-data.json for the examples. It makes performing the examples significantly easier. Plus, the examples were designed for that purpose. A cross-cluster implementation will be implemented later. Will require copying the work done to the other clusters. <br>
 The file named full-eclipse-data.json has all of the data we're going to use. It is found [here]([https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/solar_eclipse_2024.json](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/full-eclipse-data.json)) <br> 
@@ -761,7 +778,7 @@ Alternatives include renaming the states or cities, or something else.
 - that utilises an analyser 
 - to rename the st name if it matches.
 
-:question: 2. Write a custom analyzer that changes the name of `State Park` to `State Designated Outside Place` in the `name` field, add this to a new index called `funny_name_analyzer`
+:question: 2. Write a custom analyzer that changes the name of `State Park` to `SP` in the `name` field, add this to a new index called `sp_name_replacer`
 
 
 <details>
