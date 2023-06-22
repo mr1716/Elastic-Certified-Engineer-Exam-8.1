@@ -966,7 +966,7 @@ GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
 ### Write an asynchronous search to sort by timestamp
 ```json
 
-POST /{insert index here}/_async_search?size=0
+POST /totality-full/_async_search?size=0
 {
   "sort": [
     { "@timestamp": { "order": "asc" } }
@@ -1027,7 +1027,7 @@ How many have totality minutes between 3 and 5 minutes? <br>
 
 
 ```json
-GET shakespeare/_search
+GET totality-raw/_search
 {
   "query": {
     "match": {
@@ -1051,7 +1051,7 @@ GET state_parks_totality_2024/_search
 ```
 
 ```json
-GET shakespeare/_search
+GET totality-raw/_search
 {
   "query": {
     "multi_match" : {
@@ -1063,20 +1063,20 @@ GET shakespeare/_search
 }
 ```
 ```json
-GET shakespeare/_search
+GET totality-raw/_search
 {
   "query": {
     "range": {
-      "speech_number": {
-        "gte": 400,
-        "lte": 402
+      "totality_minutes": {
+        "gte": 0,
+        "lte": 2
       }
     }
   }
 }
 ```
 ```json
-GET shakespeare/_search
+GET totality-raw/_search
 {
   "size": 200,
   "query": {
@@ -1293,11 +1293,11 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 ### Highlight the search terms in the response of a query
 In the New Hampshire parks, highlight the Name starting the highlight with "#aaa# and ending it with #bbb#
 ```json
-GET shakespeare/_search
+GET totality-raw/_search
 {
     "query": {
         "match": {
-            "text_entry":  "New Hampshire"
+            "state":  "New Hampshire"
         }
     }, 
     "highlight": {
@@ -1314,7 +1314,7 @@ GET shakespeare/_search
 ## Return all of the results of a query by a given requirements
 Search the template for all of the state parks in Vermont, sorted in descending order by the number of minutes of totality.
 ```json
-GET shakespeare/_search
+GET totality-raw/_search
 {
     "query": {
         "term": {
@@ -1335,7 +1335,7 @@ GET shakespeare/_search
 Paginate the Totality results, 20 state parks per page, stating from state park 40 for the state of New Hampshire.
 This can also be done for the other states in the dataset and sorted by zipcode or coverage.
 ```json
-GET totality-all/_search
+GET totality-raw/_search
 {
     "size": 20,
     "from": 40,
