@@ -110,7 +110,7 @@ xpack.searchable.snapshot.shared_cache.size=100mb
 ### Define an index that satisfies a given set of requirements
 Insert explanation here
 ```json
-  PUT totality_2024-raw
+  PUT totality-2024-raw
   {
     "settings": {
       "number_of_shards": 1,
@@ -118,7 +118,14 @@ Insert explanation here
     }
   }
 ```
-
+The expected response should be similar to:
+```json
+{
+  "acknowleged": true,
+  "shards_acknowleged": true,
+  "index": "totality-2024-raw"
+}
+```
 ### Define and use an index template for a given pattern that satisfies a given set of requirements
 What we will do is create several different index template
 Create an index for totality for everything. And for each state
