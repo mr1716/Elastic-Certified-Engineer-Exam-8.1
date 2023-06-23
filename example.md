@@ -603,42 +603,18 @@ THe output should look similar to:
 }
 ```
 
-Note down those ids and get the balances
-```json
-GET /totality-ui/_doc/_mget?filter_path=*.*.coverage
-{
-    "100%" : ["13", "25"]
-}
-
-//Output
-
-{
-  "docs" : [
-    {
-      "_source" : {
-        "balance" : 32838
-      }
-    },
-    {
-      "_source" : {
-        "balance" : 40540
-      }
-    }
-  ]
-}
-```
 
 Update the accounts - take note of the number of `updated` docs
 ```json
 POST totality-ui/_update_by_query
 {
   "script": {
-    "source": "ctx._source.totality_minutes=ctx._source.totality_minutes+1.25",
+    "source": "ctx._source.totality_minutes=99",
     "lang": "painless"
   },
   "query": {
     "match": {
-      "coverage.keyword": "100%"
+      "state.keyword": "Vermont"
     }
   }
 }
@@ -665,29 +641,22 @@ POST totality-ui/_update_by_query
 ```
 Get those same ids again to check the balances have increased
 ```json
-GET /accounts-2021/_doc/_mget?filter_path=*.*.balance
+GET totality-raw/_search
 {
-    "ids" : ["13", "25"]
-}
-
-// Output
-
-{
-  "docs" : [
-    {
-      "_source" : {
-        "balance" : 41047.5
-      }
-    },
-    {
-      "_source" : {
-        "balance" : 50675.0
-      }
+  "query": {
+    "match": {
+      "street_address.keyword": "43 Great Bay Lane"
     }
-  ]
+  }
 }
+//Output
+...
+          "street_address" : "43 Great Bay Lane",
+          "eclipse_date" : "2024-04-08",
+          "totality_minutes" : 99,
+...
 ```
-:question: Give all state parks with 100% coverage in `totality-raw` a 20% decrease on their total time to return to their normal values
+:bonus question: Give all state parks with 100% coverage in `totality-raw` a 20% decrease on their total time to return to their normal values
 (repeat process from above)
 </details>
 <hr>
