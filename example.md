@@ -335,6 +335,7 @@ GET totality-all/_count
     "failed": 0
   }
 }
+```
 ### part 2
 
 :question: Define an index alias for `totality-raw` called `totality-full`
@@ -386,7 +387,11 @@ POST /_aliases
   ]
 }
 ```
-Output:
+Lets take a look at the alias:
+```json
+GET _alias/totality-full
+```
+And lets verify the output:
 ```json
 {
   "acknowledged": true
@@ -469,7 +474,8 @@ reindex into `totality-full`
 ```json
 POST _reindex
 {
-  "source": { "index": "totality-state-parks-raw",
+  "source": { 
+    "index": "totality-state-parks-raw",
     "query": {
       "match": {
         "coverage": "100%"
@@ -520,16 +526,88 @@ GET /totality-state-parks-full/_search?filter_path=*.*.*.coverage
 <details>
   <summary>View Solution (click to reveal)</summary>
 
-Get two example docs
+Get some example docs
 ```json
-GET /totality-raw/_search?q=gender:F&size=2
+GET /totality-raw/_search?q=coverage:100%
+```
+THe output should look similar to:
+```json
+{
+  "took": 7,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 51,
+      "relation": "eq"
+    },
+    "max_score": 1.3054422,
+    "hits": [
+      {
+        "_index": "totality-ui",
+        "_id": "QIYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "RIYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "ToYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "VIYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "VoYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "fIYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "hIYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "iIYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "sIYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "toYm6IgBqywhrlXquKQb",
+        "_score": 1.3054422
+      }
+    ]
+  }
+}
 ```
 
 Note down those ids and get the balances
 ```json
-GET /accounts-raw/_doc/_mget?filter_path=*.*.balance
+GET /totality-ui/_doc/_mget?filter_path=*.*.coverage
 {
-    "ids" : ["13", "25"]
+    "100%" : ["13", "25"]
 }
 
 //Output
@@ -552,15 +630,15 @@ GET /accounts-raw/_doc/_mget?filter_path=*.*.balance
 
 Update the accounts - take note of the number of `updated` docs
 ```json
-POST accounts-2021/_update_by_query
+POST totality-ui/_update_by_query
 {
   "script": {
-    "source": "ctx._source.balance=ctx._source.balance*1.25",
+    "source": "ctx._source.totality_minutes=ctx._source.totality_minutes+1.25",
     "lang": "painless"
   },
   "query": {
-    "term": {
-      "gender": "F"
+    "match": {
+      "coverage.keyword": "100%"
     }
   }
 }
@@ -906,33 +984,31 @@ POST _analyze
 }
 
 // output
-
 {
-  "tokens" : [
+  "tokens": [
     {
-      "token" : "PRINCE WILLIAM",
-      "start_offset" : 0,
-      "end_offset" : 14,
-      "type" : "word",
-      "position" : 0
+      "token": "Stub Stewart ",
+      "start_offset": 0,
+      "end_offset": 23,
+      "type": "word",
+      "position": 0
     },
     {
-      "token" : "WAYWARD PRINCE HAL",
-      "start_offset" : 15,
-      "end_offset" : 27,
-      "type" : "word",
-      "position" : 101
+      "token": "Very Boring ",
+      "start_offset": 24,
+      "end_offset": 46,
+      "type": "word",
+      "position": 101
     },
     {
-      "token" : "PRINEC HARRY",
-      "start_offset" : 28,
-      "end_offset" : 40,
-      "type" : "word",
-      "position" : 202
+      "token": "Super Exciting ",
+      "start_offset": 47,
+      "end_offset": 72,
+      "type": "word",
+      "position": 202
     }
   ]
 }
-
 ```
 
 ## Put it all together
@@ -941,7 +1017,7 @@ POST _analyze
 - `"rename_filter"` -> `"pattern_replace"`
 
 ```json
-PUT /henry4_hal
+PUT /new-totality
 {
   "mappings": {
     "properties": {
@@ -1011,13 +1087,13 @@ POST _reindex
 </details>
 <hr/>
 
-:question: 3. verify by querying the `henry4_hal` index for the speaker `HAL`, `WAYWARD` and `PRINCE HENRY`
+:question: 3. verify by querying the `totality-custom-analyzer` index for the speaker `HAL`, `WAYWARD` and `PRINCE HENRY`
 
 <details>
   <summary>View Solution (click to reveal)</summary>
 
 ```json
-GET henry4_hal/_search
+GET totality-custom-analyzer/_search
 {
   "query": {
     "term": {
@@ -1119,28 +1195,44 @@ Search for state parks where the value (parks_in_city, parks_in_zipcode, or park
 ## Performing Searches
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
-
-How many times do the words New Hanpshire appear in the eclipse data? <br>
-How many times do the words New and Hampshire appear in the eclipse data? <br>
-How many state parks have 100% coverage? (in totality) <br>
 How many state parks in Vermont are in the path of totality? <br>
 How many places have Vermont, Maine, New Hampshire, or Oklahoma as the state? <br>
 How many have totality minutes between 3 and 5 minutes? <br>
 
-
+How many times do the words New Hanpshire appear in the eclipse data? <br>
 ```json
 GET totality-raw/_search
 {
   "query": {
     "match": {
-      "text_entry": {
-        "query": "brothers blood",
-        "operator": "and"
+      "state": {
+        "query": "New Hampshire"
       }
     }
   }
 }
 ```
+Output
+```json
+{
+  "took": 1,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 67,
+      "relation": "eq"
+    },
+    "max_score": 1.0401459,
+    ...
+```
+How many state parks have 100% coverage? (in totality) <br>
+
 ```json
 GET state_parks_totality_2024/_search
 {
@@ -1257,13 +1349,13 @@ GET {solar eclipse}/_search?filter_path=aggregations
   "size": 0,
   "query": {
     "match": {
-      "geoip.country_iso_code": "US"
+      "totality.minutes": "2"
     }
   },
   "aggs": {
     "cart_stats": {
       "extended_stats": {
-        "field": "taxful_total_price"
+        "state": "New Hampshire"
       }
     }
   }
@@ -1394,6 +1486,7 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 ## Developing Search Applications
 ### Highlight the search terms in the response of a query
 In the New Hampshire parks, highlight the Name starting the highlight with "#aaa# and ending it with #bbb#
+Other options include highlighting 100% coverage state parks, 
 ```json
 GET totality-raw/_search
 {
@@ -1482,7 +1575,7 @@ A search template is a stored search you can run with different variables.
   <summary>View Solution (click to reveal)</summary>
 
 ```json
-POST _scripts/get_lines
+POST _scripts/get_cov_by_state
 {
   "script": {
     "lang": "mustache",
@@ -1492,12 +1585,12 @@ POST _scripts/get_lines
           "must": [
             {
               "term": {
-                "play_name": "{{play_name}}"
+                "state": "{{state_name}}"
               }
             },
             {
               "term": {
-                "speaker": "{{ speaker }}"
+                "coverage": "{{ coverage_per }}%"
               }
             }
           ]
@@ -1506,8 +1599,12 @@ POST _scripts/get_lines
     }
   }
 }
-```
+// output
 
+{
+  "acknowledged": true
+}
+```
 ## pull the template back
 
 :warning: Note that it is not formatted nicely 😤
@@ -1516,15 +1613,14 @@ POST _scripts/get_lines
 GET _scripts/get_lines
 
 // output
-
 {
-  "_id" : "get_lines",
-  "found" : true,
-  "script" : {
-    "lang" : "mustache",
-    "source" : """{"query":{"bool":{"must":[{"term":{"play_name":"{{play_name}}"}},{"term":{"speaker":"{{ speaker }}"}}]}}}""",
-    "options" : {
-      "content_type" : "application/json; charset=UTF-8"
+  "_id": "get_cov_by_state",
+  "found": true,
+  "script": {
+    "lang": "mustache",
+    "source": """{"query":{"bool":{"must":[{"term":{"state":"{{state_name}}"}},{"term":{"coverage":"{{ coverage_per }}%"}}]}}}""",
+    "options": {
+      "content_type": "application/json;charset=utf-8"
     }
   }
 }
@@ -1535,34 +1631,81 @@ GET _scripts/get_lines
 I suppose you could see this as like a `SQL user-defined function` to be called externally with far less code available to the end-user.  No per-search-template (sql-function-like) security though.  Only read access to the underlying index is required. 🙄
 
 ```json
-GET shakespeare/_search/template?filter_path=hits.hits.*.text_entry
+GET totality-ui/_search/template
 {
-    "id": "get_lines", 
+    "id": "get_cov_by_state", 
     "params": {
-        "play_name": "Cymbeline",
-        "speaker" : "Attendant"
+        "state_name": "Vermont",
+        "coverage_per" : "100"
     }
 }
 
 // output
-
 {
-  "hits" : {
-    "hits" : [
+  "took": 9,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 29,
+      "relation": "eq"
+    },
+    "max_score": 2.6161337,
+    "hits": [
       {
-        "_source" : {
-          "text_entry" : "Please you, sir,"
-        }
+        "_index": "totality-ui",
+        "_id": "xIYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
       },
       {
-        "_source" : {
-          "text_entry" : "Her chambers are all lockd; and theres no answer"
-        }
+        "_index": "totality-ui",
+        "_id": "yoYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
       },
       {
-        "_source" : {
-          "text_entry" : "That will be given to the loudest noise we make."
-        }
+        "_index": "totality-ui",
+        "_id": "zoYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "0oYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "1IYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "1oYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "3IYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "3oYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "4IYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
+      },
+      {
+        "_index": "totality-ui",
+        "_id": "6IYm6IgBqywhrlXquKQb",
+        "_score": 2.6161337
       }
     ]
   }
@@ -1647,7 +1790,7 @@ GET totality_r/_search
     "hits" : [
       {
         "_source" : {
-          "name" : "Texas"
+          "name" : ""
         }
       }
     ]
