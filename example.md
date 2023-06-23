@@ -876,14 +876,50 @@ PUT /oklahoma
  },
  "mappings": {
    "properties": {
-    "speaker": {"type": "keyword"},
-    "line_id": {
-      "type": "keyword",
-      "doc_values": false
-    },
-    "speech_number": {"type": "integer"}
+        "coverage": {
+          "type": "keyword"
+        },
+        "street_address": {
+          "type": "keyword"
+        },
+        "eclipse_date": {
+          "type": "date"
+        },
+        "start_time": {
+          "type": "date"
+        },
+        "totality_minutes": {
+          "type": "integer"
+        },
+        "city": {
+          "type": "keyword"
+        },
+        "totality_seconds": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "keyword"
+        },
+        "end_time": {
+          "type": "date"
+        },
+        "state": {
+          "type": "keyword"
+        },
+        "max_time": {
+          "type": "date"
+        },
+        "zip_code": {
+          "type": "keyword"
+        }
   }
  }
+}
+//output
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "oklahoma"
 }
 ```
 
@@ -897,12 +933,33 @@ POST _reindex
   "source": { 
     "index": "totality-raw",
     "query": {
-      "term": {
+      "match": {
         "state": "Oklahoma"
       }
     }
   },
   "dest":   { "index": "oklahoma" }
+}
+
+//Output
+{
+  "took" : 405,
+  "timed_out" : false,
+  "total" : 39,
+  "updated" : 0,
+  "created" : 39,
+  "deleted" : 0,
+  "batches" : 1,
+  "version_conflicts" : 0,
+  "noops" : 0,
+  "retries" : {
+    "bulk" : 0,
+    "search" : 0
+  },
+  "throttled_millis" : 0,
+  "requests_per_second" : -1.0,
+  "throttled_until_millis" : 0,
+  "failures" : [ ]
 }
 ```
 verify that the data only contains Oklahoma State Parks
@@ -925,22 +982,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/doc-values.html
 
 
 ```json
-PUT /totality_numeric_id
-{
- "settings": {
-   "number_of_replicas": 0
- },
- "mappings": {
-   "properties": {
-    "state": {"type": "keyword"},
-    "line_id": {
-      "type": "keyword",
-      "doc_values": false
-    },
-    "speech_number": {"type": "integer"}
-  }
- }
-}
+
 ```
 
 </details>
@@ -1144,15 +1186,15 @@ GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
 ### Write an asynchronous search to sort by timestamp
 ```json
 
-POST /totality-full/_async_search?size=0
+POST /totality-raw/_async_search?size=0
 {
   "sort": [
-    { "@timestamp": { "order": "asc" } }
+    { "totality_minutes": { "order": "asc" } }
   ],
   "aggs": {
     "sale_date": {
       "date_histogram": {
-        "field": "@timestamp",
+        "field": "totality_minutes",
         "calendar_interval": "1d"
       }
     }
@@ -1162,7 +1204,7 @@ POST /totality-full/_async_search?size=0
 
 ### Get Asynchronous Search Details
 ```json
-GET /_async_search/{id}=
+GET /_async_search/{id}
 ```
 
 ### Get Asynchronous Search Status
@@ -1344,7 +1386,7 @@ Some options include but not limited to:
 - Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of total numnber of parks.
 
 ```json
-GET {solar eclipse}/_search?filter_path=aggregations
+GET totality-raw/_search?filter_path=aggregations
 {
   "size": 0,
   "query": {
@@ -1518,7 +1560,7 @@ GET totality-raw/_search
     }, 
     "sort": [
       {
-        "totality_minutes": {
+        "coverage": {
           "order": "desc"
         }
       }
@@ -1590,7 +1632,7 @@ POST _scripts/get_cov_by_state
             },
             {
               "term": {
-                "coverage": "{{ coverage_per }}%"
+                "coverage": "{{ coverage_per}}%"
               }
             }
           ]
@@ -1610,7 +1652,7 @@ POST _scripts/get_cov_by_state
 :warning: Note that it is not formatted nicely 😤
 
 ```json
-GET _scripts/get_lines
+GET _scripts/get_cov_by_state
 
 // output
 {
@@ -1631,7 +1673,7 @@ GET _scripts/get_lines
 I suppose you could see this as like a `SQL user-defined function` to be called externally with far less code available to the end-user.  No per-search-template (sql-function-like) security though.  Only read access to the underlying index is required. 🙄
 
 ```json
-GET totality-ui/_search/template
+GET totality-raw/_search/template
 {
     "id": "get_cov_by_state", 
     "params": {
