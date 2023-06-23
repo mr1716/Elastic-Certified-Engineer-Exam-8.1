@@ -1597,18 +1597,62 @@ Search the template for all of the state parks in Vermont, sorted in descending 
 GET totality-raw/_search
 {
     "query": {
-        "term": {
+        "match": {
             "state": "Vermont"
           }
     }, 
     "sort": [
       {
-        "coverage": {
-          "order": "desc"
+        "coverage.keyword": {
+          "order": "asc"
         }
       }
     ]
 }
+//Output
+{
+  "took" : 1,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 49,
+      "relation" : "eq"
+    },
+    "max_score" : null,
+    "hits" : [
+      {
+        "_index" : "totality-raw",
+        "_id" : "67",
+        "_score" : null,
+        "_source" : {
+          "coverage" : "100%",
+          "street_address" : "151 Coon Point Rd",
+          "eclipse_date" : "2024-04-08",
+          "totality_minutes" : 3,
+          "city" : "Alburg",
+          "timezone" : "EDT",
+          "zip_code" : "05440",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T14:14:21.000Z",
+          "full_name" : " ",
+          "totality_seconds" : 33,
+          "name" : "Alburgh Dunes State Park",
+          "partial_end_time" : "2024-04-08T16:37:12.000Z",
+          "state" : "Vermont",
+          "max_time" : "2024-04-08T15:27:43.000Z"
+        },
+        "sort" : [
+          "100%"
+        ]
+      },
 ```
 
 ### Pagination 
@@ -1617,20 +1661,94 @@ This can also be done for the other states in the dataset and sorted by zipcode 
 ```json
 GET totality-raw/_search
 {
-    "size": 20,
+    "size": 2,
     "from": 40,
     "query": {
         "term": {
-            "state": "New Hampshire"
+            "state.keyword": "Vermont"
           }
     }, 
     "sort": [
       {
-        "coverage": {
+        "coverage.keyword": {
           "order": "asc"
         }
       }
     ]
+}
+//Output
+{
+  "took" : 2,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 49,
+      "relation" : "eq"
+    },
+    "max_score" : null,
+    "hits" : [
+      {
+        "_index" : "totality-raw",
+        "_id" : "105",
+        "_score" : null,
+        "_source" : {
+          "coverage" : "98.61%",
+          "street_address" : "6800 Woodstock Rd",
+          "eclipse_date" : "2024-04-08",
+          "totality_minutes" : 0,
+          "city" : "Quechee",
+          "timezone" : "EDT",
+          "zip_code" : "05059",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T14:14:47.000Z",
+          "full_name" : " ",
+          "totality_seconds" : 0,
+          "name" : "Quechee State Park",
+          "partial_end_time" : "2024-04-08T16:38:03.000Z",
+          "state" : "Vermont",
+          "max_time" : "2024-04-08T15:28:28.000Z"
+        },
+        "sort" : [
+          "98.61%"
+        ]
+      },
+      {
+        "_index" : "totality-raw",
+        "_id" : "78",
+        "_score" : null,
+        "_source" : {
+          "coverage" : "98.67%",
+          "street_address" : "855 Coolidge State Park Rd",
+          "eclipse_date" : "2024-04-08",
+          "totality_minutes" : 0,
+          "city" : "Plymouth",
+          "timezone" : "EDT",
+          "zip_code" : "05056",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T14:14:20.000Z",
+          "full_name" : " ",
+          "totality_seconds" : 0,
+          "name" : "Coolidge State Park",
+          "partial_end_time" : "2024-04-08T16:37:49.000Z",
+          "state" : "Vermont",
+          "max_time" : "2024-04-08T15:28:07.000Z"
+        },
+        "sort" : [
+          "98.67%"
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -1660,7 +1778,7 @@ A search template is a stored search you can run with different variables.
   <summary>View Solution (click to reveal)</summary>
 
 ```json
-POST _scripts/get_cov_by_state
+POST _scripts/get_by_state
 {
   "script": {
     "lang": "mustache",
@@ -1670,12 +1788,12 @@ POST _scripts/get_cov_by_state
           "must": [
             {
               "term": {
-                "state": "{{state_name}}"
+                "coverage.keyword": "{{coverage}}"
               }
             },
             {
               "term": {
-                "coverage": "{{ coverage_per}}%"
+                "state.keyword": "{{state}}"
               }
             }
           ]
@@ -1695,17 +1813,17 @@ POST _scripts/get_cov_by_state
 :warning: Note that it is not formatted nicely 😤
 
 ```json
-GET _scripts/get_cov_by_state
+GET _scripts/get_by_state
 
 // output
 {
-  "_id": "get_cov_by_state",
-  "found": true,
-  "script": {
-    "lang": "mustache",
-    "source": """{"query":{"bool":{"must":[{"term":{"state":"{{state_name}}"}},{"term":{"coverage":"{{ coverage_per }}%"}}]}}}""",
-    "options": {
-      "content_type": "application/json;charset=utf-8"
+  "_id" : "get_by_state",
+  "found" : true,
+  "script" : {
+    "lang" : "mustache",
+    "source" : """{"query":{"bool":{"must":[{"term":{"coverage.keyword":"{{coverage}}"}},{"term":{"state.keyword":"{{state}}"}}]}}}""",
+    "options" : {
+      "content_type" : "application/json;charset=utf-8"
     }
   }
 }
@@ -1718,83 +1836,53 @@ I suppose you could see this as like a `SQL user-defined function` to be called 
 ```json
 GET totality-raw/_search/template
 {
-    "id": "get_cov_by_state", 
+    "id": "get_by_state", 
     "params": {
-        "state_name": "Vermont",
-        "coverage_per" : "100"
+        "coverage": "100%",
+        "state": "Vermont"
     }
 }
-
 // output
 {
-  "took": 9,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
+  "took" : 2,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
   },
-  "hits": {
-    "total": {
-      "value": 29,
-      "relation": "eq"
+  "hits" : {
+    "total" : {
+      "value" : 28,
+      "relation" : "eq"
     },
-    "max_score": 2.6161337,
-    "hits": [
+    "max_score" : 2.6436045,
+    "hits" : [
       {
-        "_index": "totality-ui",
-        "_id": "xIYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
+        "_index" : "totality-raw",
+        "_id" : "67",
+        "_score" : 2.6436045,
+        "_source" : {
+          "coverage" : "100%",
+          "street_address" : "151 Coon Point Rd",
+          "eclipse_date" : "2024-04-08",
+          "totality_minutes" : 3,
+          "city" : "Alburg",
+          "timezone" : "EDT",
+          "zip_code" : "05440",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T14:14:21.000Z",
+          "full_name" : " ",
+          "totality_seconds" : 33,
+          "name" : "Alburgh Dunes State Park",
+          "partial_end_time" : "2024-04-08T16:37:12.000Z",
+          "state" : "Vermont",
+          "max_time" : "2024-04-08T15:27:43.000Z"
+        }
       },
-      {
-        "_index": "totality-ui",
-        "_id": "yoYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "zoYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "0oYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "1IYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "1oYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "3IYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "3oYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "4IYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      },
-      {
-        "_index": "totality-ui",
-        "_id": "6IYm6IgBqywhrlXquKQb",
-        "_score": 2.6161337
-      }
-    ]
-  }
-}
 ```
 </details>
 <hr>
