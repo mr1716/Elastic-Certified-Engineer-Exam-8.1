@@ -1570,8 +1570,8 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 ```
 ## Developing Search Applications
 ### Highlight the search terms in the response of a query
-In the New Hampshire parks, highlight the Name starting the highlight with "#aaa# and ending it with #bbb#
-Other options include highlighting 100% coverage state parks, 
+In the New Hampshire parks, highlight the Name starting the highlight with "#aaa# and ending it with #bbb# <br>
+Other options include highlighting 100% coverage state parks, parks with more than a specific amount of time in totality, state parks in a specific zipcode, or state parks in a specific city.
 ```json
 GET totality-raw/_search
 {
