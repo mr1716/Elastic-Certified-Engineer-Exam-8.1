@@ -740,14 +740,15 @@ POST _ingest/pipeline/_simulate
       }
     }
   ]
-}```
+}
+```
 
 Here you will get a lot of output, make sure it matches what you expect to see.
 
 Now copy the working pipeline
 
 ```json
-PUT _ingest/pipeline/accounts-ingest
+PUT _ingest/pipeline/totality-ingest
 {
   "description" : "pipeline to account ingest",
   "processors": [
@@ -762,23 +763,6 @@ PUT _ingest/pipeline/accounts-ingest
           "tag": "set full_name",
           "field": "full_name",
           "value": "{{firstname}} {{lastname}}"
-        }
-      },
-      {
-        "script": {
-          "tag": "39s and over female bonus",
-          "if": """
-            if (ctx.age >= 39) { 
-              if (ctx.gender=="F") { 
-                return true 
-              }
-            } 
-            return false
-          """,
-          "lang": "painless",
-          "source": """
-            ctx.balance = ctx.balance*1.05
-          """
         }
       }
     ]
@@ -822,10 +806,78 @@ PUT _ingest/pipeline/accounts-ingest
 Then reindex the data with that new pipeline
 ```json
 POST totality-raw/_update_by_query?pipeline=totality-ingest
+
+//output
+{
+  "took" : 188,
+  "timed_out" : false,
+  "total" : 187,
+  "updated" : 187,
+  "deleted" : 0,
+  "batches" : 1,
+  "version_conflicts" : 0,
+  "noops" : 0,
+  "retries" : {
+    "bulk" : 0,
+    "search" : 0
+  },
+  "throttled_millis" : 0,
+  "requests_per_second" : -1.0,
+  "throttled_until_millis" : 0,
+  "failures" : [ ]
+}
+
 ```
 Checking to verify that the data was transformed properly:
 ```json
-POST totality-raw/_search?filter_path=*.*._id
+POST totality-raw
+
+// Output 
+{
+  "took" : 2,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 187,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "totality-raw",
+        "_id" : "0",
+        "_score" : 1.0,
+        "_source" : {
+          "street_address" : "43 Great Bay Lane",
+          "eclipse_date" : "2024-04-08",
+          "totality_minutes" : 0,
+          "city" : "Laconia",
+          "timezone" : "EDT",
+          "zip_code" : "03246",
+          "coverage_percent" : "97.47%",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T14:16:03.000Z",
+          "full_name" : " ",
+          "totality_seconds" : 0,
+          "name" : "Ahern State Park",
+          "partial_end_time" : "2024-04-08T16:38:48.000Z",
+          "state" : "New Hampshire",
+          "max_time" : "2024-04-08T15:29:32.000Z"
+        }
+      },
+```
+If you wanted to limit the size and specifics of the request to check if the ingest pipeline worked, you can use the following:
+
+```json
+POST totality-raw
 {
   "size": 1, 
   "query": { 
@@ -840,19 +892,7 @@ POST totality-raw/_search?filter_path=*.*._id
   }
 }
 
-// Output 
-
-{
-  "hits" : {
-    "hits" : [
-      {
-        "_id" : "25"
-      }
-    ]
-  }
-}
 ```
-
 ###  Define a mapping that satisfies a given set of requirements
 
 ### Dynamic mapping
