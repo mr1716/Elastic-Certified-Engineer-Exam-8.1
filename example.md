@@ -715,26 +715,8 @@ POST _ingest/pipeline/_simulate
       },
       {
         "set": {
-          "tag": "set full_duration",
           "field": "full_duration",
-          "value": "{{minutes}}:{{seconds}}"
-        }
-      },
-      {
-        "script": {
-          "tag": "39s and over female bonus",
-          "if": """
-            if (ctx.age >= 39) { 
-              if (ctx.gender=="F") { 
-                return true 
-              }
-            } 
-            return false
-          """,
-          "lang": "painless",
-          "source": """
-            ctx.balance = ctx.balance*1.05
-          """
+          "value": "{{totality_minutes}}:{{totality_seconds}}"
         }
       }
     ]
@@ -742,37 +724,23 @@ POST _ingest/pipeline/_simulate
   "docs": [
     {
       "_source": {
-        "account_number": 10000,
-        "balance": 1000000,
-        "firstname": "George",
-        "lastname": "Cross",
-        "age": 92,
-        "gender": "M",
-        "address": "1 Dog Lane",
-        "employer": "Wheatens",
-        "email": "george@wheatens.com",
-        "city": "London",
-        "state": "UK"
-      }
-    },
-    {
-      "_source": {
-        "account_number": 10001,
-        "balance": 1000001,
-        "firstname": "Millie",
-        "lastname": "Cross",
-        "age": 84,
-        "gender": "F",
-        "address": "1 Dog Lane",
-        "employer": "Wheatens",
-        "email": "millie@wheatens.com",
-        "city": "London",
-        "state": "UK"
+        "name": "Tenkiller",
+        "street_address": "OK-100",
+        "city": "Vian",
+        "state": "Oklahoma",
+        "zip_code": "74962",
+        "timezone": "CDT",
+        "coverage": "100%",
+        "eclipse_date": "2024-04-08",
+        "totality_minutes": 3,
+        "totality_seconds": 54,
+        "partial_start_time": "2024-04-08T12:28:11.000Z",
+        "max_time": "2024-04-08T13:47:24.000Z",
+        "partial_end_time": "2024-04-08T15:06:45.000Z"
       }
     }
   ]
-}
-```
+}```
 
 Here you will get a lot of output, make sure it matches what you expect to see.
 
@@ -815,6 +783,41 @@ PUT _ingest/pipeline/accounts-ingest
       }
     ]
 }
+
+//Output
+{
+  "docs" : [
+    {
+      "doc" : {
+        "_index" : "_index",
+        "_id" : "_id",
+        "_source" : {
+          "coverage" : "100%",
+          "street_address" : "OK-100",
+          "eclipse_date" : "2024-04-08",
+          "full_duration" : "3:54",
+          "totality_minutes" : 3,
+          "city" : "Vian",
+          "timezone" : "CDT",
+          "zip_code" : "74962",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T12:28:11.000Z",
+          "totality_seconds" : 54,
+          "name" : "Tenkiller",
+          "partial_end_time" : "2024-04-08T15:06:45.000Z",
+          "state" : "Oklahoma",
+          "max_time" : "2024-04-08T13:47:24.000Z"
+        },
+        "_ingest" : {
+          "timestamp" : "2023-06-23T16:58:30.388650808Z"
+        }
+      }
+    }
+  ]
+}
+
 ```
 Then reindex the data with that new pipeline
 ```json
