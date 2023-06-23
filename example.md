@@ -1395,23 +1395,13 @@ What we will do is use the index aliases and created indexes so far to perform a
 
 ### Metric Aggregations
 Some options include but not limited to:
-- Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of total numnber of parks.
-
+- Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of total numnber of parks. <br>
+The example below shows the maximum amount of minutes.
 ```json
-GET totality-raw/_search?filter_path=aggregations
+POST /totality-raw/_search
 {
-  "size": 0,
-  "query": {
-    "match": {
-      "totality.minutes": "2"
-    }
-  },
   "aggs": {
-    "cart_stats": {
-      "extended_stats": {
-        "state": "New Hampshire"
-      }
-    }
+    "most_minutes_totality": { "max": { "field": "totality_minutes" } }
   }
 }
 ```
@@ -1426,20 +1416,18 @@ Other bucket aggregations applicable to this data include: <br>
 ### Bucket Aggregations
 Display number of sites per state <br>
 Display number of sites per coverage % <br>
+Display the number of sites per minutes of totality <br>
 Display number of sites per zip code <br>
 Display number of sites per city <br>
 Display number of sites per totality minutes <br>
 
 ```json
-GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
-{
-  "size":0,
+GET totality-raw/_search?filter_path=aggregations
+{  
   "aggs": {
-    "date_hist": {
-      "date_histogram": {
-        "field": "order_date",
-        "calendar_interval": "1d",
-        "min_doc_count": 1
+    "my-agg-name": {
+      "terms": {
+        "field": "totality_minutes"
       }
     }
   }
@@ -1506,9 +1494,9 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 }
 ```
 
-Putting all together:
+Putting all together in a way (not combining the exact 2 from above) to show the total count of the totality minutes field for the state parks in Oklahoma:
 ```json
-GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
+GET oklahoma/_search?filter_path=aggregations
 {
   "size":0,
   "aggs": {
@@ -1525,7 +1513,7 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
             "size": 8
           },
           "aggs": {
-            "total_sales_price": {
+            "total_totality_minutes": {
               "sum": {
                 "field": "totality_minutes"
               }
