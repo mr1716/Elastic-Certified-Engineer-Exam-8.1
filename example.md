@@ -197,6 +197,71 @@ PUT _template/totality_2024-tmpl
   }
 }
 ```
+
+Verify The results:
+```json
+GET _template/totality-2024-tmpl
+
+//output
+{
+  "totality-2024-tmpl": {
+    "order": 0,
+    "index_patterns": [
+      "totality-*"
+    ],
+    "settings": {
+      "index": {
+        "number_of_shards": "1",
+        "number_of_replicas": "0"
+      }
+    },
+    "mappings": {
+      "_source": {
+        "enabled": false
+      },
+      "properties": {
+        "coverage": {
+          "type": "keyword"
+        },
+        "street_address": {
+          "type": "keyword"
+        },
+        "eclipse_date": {
+          "type": "date"
+        },
+        "start_time": {
+          "type": "date"
+        },
+        "totality_minutes": {
+          "type": "integer"
+        },
+        "city": {
+          "type": "keyword"
+        },
+        "totality_seconds": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "keyword"
+        },
+        "end_time": {
+          "type": "date"
+        },
+        "state": {
+          "type": "keyword"
+        },
+        "max_time": {
+          "type": "date"
+        },
+        "zip_code": {
+          "type": "keyword"
+        }
+      }
+    },
+    "aliases": {}
+  }
+}
+```
 #### Create Index Pattern
 This is to allow for creation of the pattern for use in Kibana
 
@@ -248,11 +313,28 @@ POST /_aliases
     }
   ]
 }
+//output:
+{
+  "acknowledged": true
+}
 ```
 
 To verify: <br>
-Check that the document count matches using GET totality-all/_count
 
+Check that the document count matches using 
+```json
+GET totality-all/_count
+
+//output
+{
+  "count": 0,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  }
+}
 ### part 2
 
 :question: Define an index alias for `totality-raw` called `totality-full`
@@ -267,9 +349,16 @@ GET totality-raw/_mapping/field/coverage
 // Output 
 
 {
-  "totality-raw" : {
-    "mappings" : {
-
+  "totality-raw": {
+    "mappings": {
+      "coverage": {
+        "full_name": "coverage",
+        "mapping": {
+          "coverage": {
+            "type": "keyword"
+          }
+        }
+      }
     }
   }
 }
@@ -295,6 +384,12 @@ POST /_aliases
       }
     }
   ]
+}
+```
+Output:
+```json
+{
+  "acknowledged": true
 }
 ```
 
@@ -427,7 +522,7 @@ GET /totality-state-parks-full/_search?filter_path=*.*.*.coverage
 
 Get two example docs
 ```json
-GET /accounts-raw/_search?q=gender:F&size=2
+GET /totality-raw/_search?q=gender:F&size=2
 ```
 
 Note down those ids and get the balances
