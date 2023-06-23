@@ -292,7 +292,7 @@ The file named full-eclipse-data.json has all of the data we're going to use. It
 To find the data broken down by state into each line, check out the file unique-clusters.json [here](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/unique-clusters.json) <br> The benefit of this is that is broken down by each state each line. DO NOT attempt to upload this as 1 file. It is meant to be used to upload 1 line per cluster and provide the benfits of cross cluster search. <br>
 
 To upload this into elasticsearch, run: <br>
-$ curl -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/totality_info/_bulk --data-binary "@full-eclipse-data.json"; echo
+$ curl -k -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/totality_info/_bulk --data-binary "@full-eclipse-data.json"; echo
 
 The reason for this is to be able to practice with cross cluster replication and cross cluster search!
 
@@ -715,26 +715,8 @@ POST _ingest/pipeline/_simulate
       },
       {
         "set": {
-          "tag": "set full_duration",
           "field": "full_duration",
-          "value": "{{minutes}}:{{seconds}}"
-        }
-      },
-      {
-        "script": {
-          "tag": "39s and over female bonus",
-          "if": """
-            if (ctx.age >= 39) { 
-              if (ctx.gender=="F") { 
-                return true 
-              }
-            } 
-            return false
-          """,
-          "lang": "painless",
-          "source": """
-            ctx.balance = ctx.balance*1.05
-          """
+          "value": "{{totality_minutes}}:{{totality_seconds}}"
         }
       }
     ]
@@ -742,32 +724,19 @@ POST _ingest/pipeline/_simulate
   "docs": [
     {
       "_source": {
-        "account_number": 10000,
-        "balance": 1000000,
-        "firstname": "George",
-        "lastname": "Cross",
-        "age": 92,
-        "gender": "M",
-        "address": "1 Dog Lane",
-        "employer": "Wheatens",
-        "email": "george@wheatens.com",
-        "city": "London",
-        "state": "UK"
-      }
-    },
-    {
-      "_source": {
-        "account_number": 10001,
-        "balance": 1000001,
-        "firstname": "Millie",
-        "lastname": "Cross",
-        "age": 84,
-        "gender": "F",
-        "address": "1 Dog Lane",
-        "employer": "Wheatens",
-        "email": "millie@wheatens.com",
-        "city": "London",
-        "state": "UK"
+        "name": "Tenkiller",
+        "street_address": "OK-100",
+        "city": "Vian",
+        "state": "Oklahoma",
+        "zip_code": "74962",
+        "timezone": "CDT",
+        "coverage": "100%",
+        "eclipse_date": "2024-04-08",
+        "totality_minutes": 3,
+        "totality_seconds": 54,
+        "partial_start_time": "2024-04-08T12:28:11.000Z",
+        "max_time": "2024-04-08T13:47:24.000Z",
+        "partial_end_time": "2024-04-08T15:06:45.000Z"
       }
     }
   ]
@@ -779,7 +748,7 @@ Here you will get a lot of output, make sure it matches what you expect to see.
 Now copy the working pipeline
 
 ```json
-PUT _ingest/pipeline/accounts-ingest
+PUT _ingest/pipeline/totality-ingest
 {
   "description" : "pipeline to account ingest",
   "processors": [
@@ -795,34 +764,120 @@ PUT _ingest/pipeline/accounts-ingest
           "field": "full_name",
           "value": "{{firstname}} {{lastname}}"
         }
-      },
-      {
-        "script": {
-          "tag": "39s and over female bonus",
-          "if": """
-            if (ctx.age >= 39) { 
-              if (ctx.gender=="F") { 
-                return true 
-              }
-            } 
-            return false
-          """,
-          "lang": "painless",
-          "source": """
-            ctx.balance = ctx.balance*1.05
-          """
-        }
       }
     ]
 }
+
+//Output
+{
+  "docs" : [
+    {
+      "doc" : {
+        "_index" : "_index",
+        "_id" : "_id",
+        "_source" : {
+          "coverage" : "100%",
+          "street_address" : "OK-100",
+          "eclipse_date" : "2024-04-08",
+          "full_duration" : "3:54",
+          "totality_minutes" : 3,
+          "city" : "Vian",
+          "timezone" : "CDT",
+          "zip_code" : "74962",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T12:28:11.000Z",
+          "totality_seconds" : 54,
+          "name" : "Tenkiller",
+          "partial_end_time" : "2024-04-08T15:06:45.000Z",
+          "state" : "Oklahoma",
+          "max_time" : "2024-04-08T13:47:24.000Z"
+        },
+        "_ingest" : {
+          "timestamp" : "2023-06-23T16:58:30.388650808Z"
+        }
+      }
+    }
+  ]
+}
+
 ```
 Then reindex the data with that new pipeline
 ```json
 POST totality-raw/_update_by_query?pipeline=totality-ingest
+
+//output
+{
+  "took" : 188,
+  "timed_out" : false,
+  "total" : 187,
+  "updated" : 187,
+  "deleted" : 0,
+  "batches" : 1,
+  "version_conflicts" : 0,
+  "noops" : 0,
+  "retries" : {
+    "bulk" : 0,
+    "search" : 0
+  },
+  "throttled_millis" : 0,
+  "requests_per_second" : -1.0,
+  "throttled_until_millis" : 0,
+  "failures" : [ ]
+}
+
 ```
 Checking to verify that the data was transformed properly:
 ```json
-POST totality-raw/_search?filter_path=*.*._id
+POST totality-raw
+
+// Output 
+{
+  "took" : 2,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 187,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "totality-raw",
+        "_id" : "0",
+        "_score" : 1.0,
+        "_source" : {
+          "street_address" : "43 Great Bay Lane",
+          "eclipse_date" : "2024-04-08",
+          "totality_minutes" : 0,
+          "city" : "Laconia",
+          "timezone" : "EDT",
+          "zip_code" : "03246",
+          "coverage_percent" : "97.47%",
+          "tags" : [
+            "pipeline_ingest"
+          ],
+          "partial_start_time" : "2024-04-08T14:16:03.000Z",
+          "full_name" : " ",
+          "totality_seconds" : 0,
+          "name" : "Ahern State Park",
+          "partial_end_time" : "2024-04-08T16:38:48.000Z",
+          "state" : "New Hampshire",
+          "max_time" : "2024-04-08T15:29:32.000Z"
+        }
+      },
+```
+If you wanted to limit the size and specifics of the request to check if the ingest pipeline worked, you can use the following:
+
+```json
+POST totality-raw
 {
   "size": 1, 
   "query": { 
@@ -837,19 +892,7 @@ POST totality-raw/_search?filter_path=*.*._id
   }
 }
 
-// Output 
-
-{
-  "hits" : {
-    "hits" : [
-      {
-        "_id" : "25"
-      }
-    ]
-  }
-}
 ```
-
 ###  Define a mapping that satisfies a given set of requirements
 
 ### Dynamic mapping
@@ -876,14 +919,50 @@ PUT /oklahoma
  },
  "mappings": {
    "properties": {
-    "speaker": {"type": "keyword"},
-    "line_id": {
-      "type": "keyword",
-      "doc_values": false
-    },
-    "speech_number": {"type": "integer"}
+        "coverage": {
+          "type": "keyword"
+        },
+        "street_address": {
+          "type": "keyword"
+        },
+        "eclipse_date": {
+          "type": "date"
+        },
+        "start_time": {
+          "type": "date"
+        },
+        "totality_minutes": {
+          "type": "integer"
+        },
+        "city": {
+          "type": "keyword"
+        },
+        "totality_seconds": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "keyword"
+        },
+        "end_time": {
+          "type": "date"
+        },
+        "state": {
+          "type": "keyword"
+        },
+        "max_time": {
+          "type": "date"
+        },
+        "zip_code": {
+          "type": "keyword"
+        }
   }
  }
+}
+//output
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "oklahoma"
 }
 ```
 
@@ -897,12 +976,33 @@ POST _reindex
   "source": { 
     "index": "totality-raw",
     "query": {
-      "term": {
+      "match": {
         "state": "Oklahoma"
       }
     }
   },
   "dest":   { "index": "oklahoma" }
+}
+
+//Output
+{
+  "took" : 405,
+  "timed_out" : false,
+  "total" : 39,
+  "updated" : 0,
+  "created" : 39,
+  "deleted" : 0,
+  "batches" : 1,
+  "version_conflicts" : 0,
+  "noops" : 0,
+  "retries" : {
+    "bulk" : 0,
+    "search" : 0
+  },
+  "throttled_millis" : 0,
+  "requests_per_second" : -1.0,
+  "throttled_until_millis" : 0,
+  "failures" : [ ]
 }
 ```
 verify that the data only contains Oklahoma State Parks
@@ -925,22 +1025,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/doc-values.html
 
 
 ```json
-PUT /totality_numeric_id
-{
- "settings": {
-   "number_of_replicas": 0
- },
- "mappings": {
-   "properties": {
-    "state": {"type": "keyword"},
-    "line_id": {
-      "type": "keyword",
-      "doc_values": false
-    },
-    "speech_number": {"type": "integer"}
-  }
- }
-}
+
 ```
 
 </details>
@@ -1144,15 +1229,15 @@ GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
 ### Write an asynchronous search to sort by timestamp
 ```json
 
-POST /totality-full/_async_search?size=0
+POST /totality-raw/_async_search?size=0
 {
   "sort": [
-    { "@timestamp": { "order": "asc" } }
+    { "totality_minutes": { "order": "asc" } }
   ],
   "aggs": {
     "sale_date": {
       "date_histogram": {
-        "field": "@timestamp",
+        "field": "totality_minutes",
         "calendar_interval": "1d"
       }
     }
@@ -1162,7 +1247,7 @@ POST /totality-full/_async_search?size=0
 
 ### Get Asynchronous Search Details
 ```json
-GET /_async_search/{id}=
+GET /_async_search/{id}
 ```
 
 ### Get Asynchronous Search Status
@@ -1344,7 +1429,7 @@ Some options include but not limited to:
 - Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of total numnber of parks.
 
 ```json
-GET {solar eclipse}/_search?filter_path=aggregations
+GET totality-raw/_search?filter_path=aggregations
 {
   "size": 0,
   "query": {
@@ -1518,7 +1603,7 @@ GET totality-raw/_search
     }, 
     "sort": [
       {
-        "totality_minutes": {
+        "coverage": {
           "order": "desc"
         }
       }
@@ -1590,7 +1675,7 @@ POST _scripts/get_cov_by_state
             },
             {
               "term": {
-                "coverage": "{{ coverage_per }}%"
+                "coverage": "{{ coverage_per}}%"
               }
             }
           ]
@@ -1610,7 +1695,7 @@ POST _scripts/get_cov_by_state
 :warning: Note that it is not formatted nicely 😤
 
 ```json
-GET _scripts/get_lines
+GET _scripts/get_cov_by_state
 
 // output
 {
@@ -1631,7 +1716,7 @@ GET _scripts/get_lines
 I suppose you could see this as like a `SQL user-defined function` to be called externally with far less code available to the end-user.  No per-search-template (sql-function-like) security though.  Only read access to the underlying index is required. 🙄
 
 ```json
-GET totality-ui/_search/template
+GET totality-raw/_search/template
 {
     "id": "get_cov_by_state", 
     "params": {
