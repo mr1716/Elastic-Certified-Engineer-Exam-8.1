@@ -136,7 +136,7 @@ name, street address, city, state, zipcode, coverage %, eclipse date, totality m
 ```json
 PUT _template/totality_2024-tmpl
 {
-  "index_patterns": ["totality_2024-*"],
+  "index_patterns": ["totality-2024-*"],
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0
