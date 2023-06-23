@@ -386,7 +386,11 @@ POST /_aliases
   ]
 }
 ```
-Output:
+Lets take a look at the alias:
+```json
+GET _alias/totality-full
+```
+And lets verify the output:
 ```json
 {
   "acknowledged": true
@@ -522,7 +526,7 @@ GET /totality-state-parks-full/_search?filter_path=*.*.*.coverage
 
 Get two example docs
 ```json
-GET /totality-raw/_search?q=gender:F&size=2
+GET /totality-raw/_search?q=coverage:100%
 ```
 
 Note down those ids and get the balances
