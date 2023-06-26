@@ -262,20 +262,20 @@ GET _template/totality-2024-tmpl
   }
 }
 ```
-#### Create Index Pattern
-This is to allow for creation of the pattern for use in Kibana
 
 ### Define and use a dynamic template that satisfies a given set of requirements
-What we can do is use a dynamic template to define the totality minutes and seconds fields as longs, from integers.
+This isnt a greatest example, but it works.This doesnt do the best job of showing what it can do, but the thing is that these are used instead of the tempalte above to create a more dynamic template and index<br>
+What we can do is use a dynamic template to define the totality minutes and seconds fields as longs, from strings.
 ```json
-PUT my-index-000001
+PUT dynamic-totality-raw
 {
   "mappings": {
     "dynamic_templates": [
       {
         "longs_as_strings": {
-          "match_mapping_type": "integer",
+          "match_mapping_type": "string",
           "match":   "totality_*",
+          "unmatch": "*_text",
           "mapping": {
             "type": "long"
           }
@@ -284,7 +284,33 @@ PUT my-index-000001
     ]
   }
 }
+//Output
+{
+  "_index" : "dynamic-totality-raw22",
+  "_id" : "1",
+  "_version" : 1,
+  "result" : "created",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "_seq_no" : 0,
+  "_primary_term" : 1
+}
 ```
+The next step is to add in data before the final step of verifying that it worked as intended.
+'''json
+PUT dynamic-totality-raw/_doc/1
+{
+  "age": 22,
+  "totality_minutes": "5", 
+  "totality_seconds": "0" ,
+  "email": "fake@domain.com",
+  "name":"Boaty McBoatface"
+}
+'''
+
 ### Lets Upload The Data
 If running this in a single node environment, use the file named full-eclipse-data.json for the examples. It makes performing the examples significantly easier. Plus, the examples were designed for that purpose. A cross-cluster implementation will be implemented later. Will require copying the work done to the other clusters. <br>
 The file named full-eclipse-data.json has all of the data we're going to use. It is found [here]([https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/solar_eclipse_2024.json](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/full-eclipse-data.json)) <br> 
