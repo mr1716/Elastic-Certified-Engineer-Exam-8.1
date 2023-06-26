@@ -1359,7 +1359,7 @@ PUT totality-raw-runtime/
 }
 ```
 
-Then we will add in data into the system for testing. This is not the full list of the imported fields, but rather an example of what it would look like from the dev console. The full file can be found at the example-data folder in the put-runtime-fields.json file. 
+Then we will add in data into the system for testing. This is not the full list of the imported fields, but rather an example of what it would look like from the dev console. The full file can be found at the example-date folder in the put-runtime-fields.json file. 
 
 ```json
 POST /totality-raw-runtime/_bulk?refresh
