@@ -1251,7 +1251,7 @@ PUT totality-raw-runtime/
 {
   "mappings": {
     "runtime": {
-      "total_seconds": {
+      "total-time-info": {
         "type": "long",
         "script": {
           "source": "emit((doc['totality_minutes'].value * 60) + doc['totality_seconds'].value);"
@@ -1259,8 +1259,8 @@ PUT totality-raw-runtime/
       }
     },
     "properties": {
-      "@totality_seconds": {"type": "long"},
-	  "totality_minutes": {"type": "long"}
+      "totality_seconds": {"type": "long"},
+      "totality_minutes": {"type": "long"}
     }
   }
 }
@@ -1310,7 +1310,7 @@ How many have seconds_per_site above a specific value such as 200.
 GET totality-raw-runtime2/_search
 {
   "fields": [
-    "total_seconds"
+    "total-time-info"
   ],
   "size": 2
 }
@@ -1319,7 +1319,7 @@ GET totality-raw-runtime2/_search
 GET totality-raw/_search
 {
   "runtime_mappings": {
-    "day_of_week": {
+    "total-time-info": {
       "type": "long",
       "script": {
         "source": "emit((doc['totality_minutes'].value * 60) + doc['totality_seconds'].value)"
@@ -1327,9 +1327,9 @@ GET totality-raw/_search
     }
   },
   "aggs": {
-    "day_of_week": {
+    "total-time-info": {
       "terms": {
-        "field": "day_of_week"
+        "field": "total-time-info"
       }
     }
   }
