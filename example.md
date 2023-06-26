@@ -1011,7 +1011,7 @@ Alternatives include renaming the states or cities, or something else.
 - Create a new index
 - with a mapping on the name field 
 - that utilises an analyser 
-- to rename the st name if it matches.
+- to rename the state name to its abbreviation if it matches.
 
 :question: 2. Write a custom analyzer that changes the name of `State Park` to `SP` in the `name` field, add this to a new index called `sp_name_replacer`
 
@@ -1066,12 +1066,9 @@ POST _analyze
 ```
 
 ## Put it all together
-- mappings -> `speaker` -> `"analyzer": "wayward_son_analyser"`
-- settings -> analysis -> `"wayward_son_analyser"` -> `"char_filter": ["rename_filter"]`
-- `"rename_filter"` -> `"pattern_replace"`
 
 ```json
-PUT /new-totality
+PUT /ok-custom-analyzer
 {
   "mappings": {
     "properties": {
@@ -1108,8 +1105,8 @@ PUT /new-totality
       "char_filter": {
         "rename_filter": {
           "type": "pattern_replace",
-          "pattern": "PRINCE HENRY",
-          "replacement": "WAYWARD PRINCE HAL"
+          "pattern": "Oklahoma",
+          "replacement": "OK"
         }
       }
     }
@@ -1127,15 +1124,15 @@ PUT /new-totality
 ```json
 POST _reindex
 {
-  "source": {
-    "index": "totality-all",
+  "source": { 
+    "index": "totality-raw",
     "query": {
       "term": {
-        "play_name": "Henry IV"
+        "state.keyword": "Oklahoma"
       }
     }
   },
-  "dest":   { "index": "totality-custom-analyzer" }
+  "dest":   { "index": "ok-custom-analyzer" }
 }
 ```
 </details>
@@ -1147,11 +1144,11 @@ POST _reindex
   <summary>View Solution (click to reveal)</summary>
 
 ```json
-GET totality-custom-analyzer/_search
+GET ok-custom-analyzer/_search
 {
   "query": {
     "term": {
-      "speaker": "HAL"
+      "state.keyword": "Ok"
     }
   }
 }
