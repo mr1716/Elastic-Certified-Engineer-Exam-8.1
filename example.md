@@ -1994,7 +1994,6 @@ GET totality_r/_search
         "bool": {
           "must": [
             { "match": { "relationship.camping": "Yes" }},
-            { "match": { "relationship.type":  "A State Park" }} 
           ]
         }
       }
@@ -2002,13 +2001,34 @@ GET totality_r/_search
   }
 }
 // output
-
 {
+  "took" : 5,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
   "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.1507283,
     "hits" : [
       {
+        "_index" : "totality_r222",
+        "_id" : "_doc",
+        "_score" : 1.1507283,
         "_source" : {
-          "name" : ""
+          "name" : "X State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "Y State Park"
+            }
+          ]
         }
       }
     ]
@@ -2019,7 +2039,7 @@ GET totality_r/_search
 </details>
 <hr/>
 
-:question: 3. Show all state parks that have camping set to Yes and neighbor set to Y State Park.
+:question: 3. Show all state parks that have camping set to Yes AND neighbor set to Y State Park.
 
 
 <details>
@@ -2027,18 +2047,11 @@ GET totality_r/_search
 
 There should be four.  This is where the nesting comes into play as `FALSTAFF` himself decribes `PRINCE HENRY` as his only friend. But other people describe `FALSTAFF` as their friend.
 
-```
-PRINCE HENRY -> FALSTAFF
-FALSTAFF -> PRINCE HENRY
-POINS -> FALSTAFF
-BARDOLPH -> FALSTAFF
-PETO -> FALSTAFF
-```
 
 # query
 
 ```json
-GET henry4_r/_search?filter_path=*.*.*.name
+GET totality_r/_search
 {
   "query": {
     "nested": {
@@ -2046,8 +2059,8 @@ GET henry4_r/_search?filter_path=*.*.*.name
       "query": {
         "bool": {
           "must": [
-            { "match": { "relationship.camping": "Yes" }},
-            { "match": { "relationship.neighbor":  "Y State Park" }} 
+            { "match": { "relationship.camping": "Yes" },
+                         "relationship.neighbor":  "Y State Park" }
           ]
         }
       }
@@ -2058,26 +2071,33 @@ GET henry4_r/_search?filter_path=*.*.*.name
 // output
 
 {
+  "took" : 5,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
   "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.1507283,
     "hits" : [
       {
+        "_index" : "totality_r222",
+        "_id" : "_doc",
+        "_score" : 1.1507283,
         "_source" : {
-          "name" : "POINS"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "BARDOLPH"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "PETO"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "PRINCE HENRY"
+          "name" : "X State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "Y State Park"
+            }
+          ]
         }
       }
     ]
