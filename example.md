@@ -1210,7 +1210,61 @@ POST /totality-raw/_async_search?size=0
   }
 }
 ```
+### Write and execute a search query that is a Boolean combination of multiple queries and filters
+Write a query that provides all of the state parks in New Hampshire with a zip code of 03579. Add 
+```json
 
+GET totality-raw/_search
+{
+  "size": 200,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "state.keyword": "New Hampshire"
+          }
+        },
+        {
+          "term": {
+            "zip_code": "03579"
+          }
+        }
+      ]
+    }
+  }
+}   
+```
+Show the result above but filtering out the state parks with 0 seconds totality time
+```json
+GET totality-raw/_search
+{
+  "size": 200,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "state.keyword": "New Hampshire"
+          }
+        },
+        {
+          "term": {
+            "zip_code": "03579"
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "term": {
+            "totality_seconds": "0"
+          }
+        }
+      ]
+    }
+  }
+}    
+```
 ### Get Asynchronous Search Details
 ```json
 GET /_async_search/{id}
@@ -1947,11 +2001,13 @@ PUT totality_r/_doc/_bulk
 {"index":{"_index":"totality_r","_id":"3"}}
 {"name":"A State Park","relationship":[{"camping":"Yes","neighbor":"X State Park"}]}
 {"index":{"_index":"totality_r","_id":"4"}}
-{"name":"B State Park","relationship":[{"camping":"No","type":"X State Park"}]}
+{"name":"B State Park","relationship":[{"camping":"No","neighbor":"X State Park"}]}
 {"index":{"_index":"totality_r","_id":"5"}}
-{"name":"C State Park","relationship":[{"camping":"No","type":"Y State Park"}]}
+{"name":"C State Park","relationship":[{"camping":"No","neighbor":"Y State Park"}]}
 {"index":{"_index":"totality_r","_id":"6"}}
-{"name":"D State Park","relationship":[{"camping":"No","type":"Z State Park"}]}
+{"name":"D State Park","relationship":[{"camping":"No","neighbor":"Z State Park"}]}
+{"index":{"_index":"totality_r","_id":"7"}}
+{"name":"Z State Park","relationship":[{"camping":"No","neighbor":"A State Park"}]}
 ```
 
 <details>
@@ -1977,7 +2033,7 @@ PUT totality_r
 </details>
 <hr/>
 
-:question: 2. Then query all items in the index that are the `neighbors` of `A State park` and have 'camping' set to 'Yes'
+:question: 2. Then query all items in the index that have 'camping' set to 'Yes'
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -1993,8 +2049,7 @@ GET totality_r/_search
       "query": {
         "bool": {
           "must": [
-            { "match": { "relationship.camping": "Yes" }},
-            { "match": { "relationship.type":  "A State Park" }} 
+            { "match": { "relationship.camping": "Yes" }}
           ]
         }
       }
@@ -2002,13 +2057,62 @@ GET totality_r/_search
   }
 }
 // output
-
 {
+  "took" : 1,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
   "hits" : {
+    "total" : {
+      "value" : 3,
+      "relation" : "eq"
+    },
+    "max_score" : 0.8266786,
     "hits" : [
       {
+        "_index" : "totality_r5",
+        "_id" : "0",
+        "_score" : 0.8266786,
         "_source" : {
-          "name" : ""
+          "name" : "X State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "Y State Park"
+            }
+          ]
+        }
+      },
+      {
+        "_index" : "totality_r5",
+        "_id" : "2",
+        "_score" : 0.8266786,
+        "_source" : {
+          "name" : "Z State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "A State Park"
+            }
+          ]
+        }
+      },
+      {
+        "_index" : "totality_r5",
+        "_id" : "3",
+        "_score" : 0.8266786,
+        "_source" : {
+          "name" : "A State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "X State Park"
+            }
+          ]
         }
       }
     ]
@@ -2019,26 +2123,17 @@ GET totality_r/_search
 </details>
 <hr/>
 
-:question: 3. Show all state parks that have camping set to Yes and neighbor set to Y State Park.
+:question: 3. Show all state parks that have camping set to Yes AND neighbor set to Y State Park.
 
 
 <details>
   <summary>View Solution (click to reveal)</summary>
-
-There should be four.  This is where the nesting comes into play as `FALSTAFF` himself decribes `PRINCE HENRY` as his only friend. But other people describe `FALSTAFF` as their friend.
-
-```
-PRINCE HENRY -> FALSTAFF
-FALSTAFF -> PRINCE HENRY
-POINS -> FALSTAFF
-BARDOLPH -> FALSTAFF
-PETO -> FALSTAFF
-```
+This will show neighors to Y state park as well.
 
 # query
 
 ```json
-GET henry4_r/_search?filter_path=*.*.*.name
+GET totality_r/_search
 {
   "query": {
     "nested": {
@@ -2058,26 +2153,33 @@ GET henry4_r/_search?filter_path=*.*.*.name
 // output
 
 {
+  "took" : 5,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
   "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.1507283,
     "hits" : [
       {
+        "_index" : "totality_r222",
+        "_id" : "_doc",
+        "_score" : 1.1507283,
         "_source" : {
-          "name" : "POINS"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "BARDOLPH"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "PETO"
-        }
-      },
-      {
-        "_source" : {
-          "name" : "PRINCE HENRY"
+          "name" : "X State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "Y State Park"
+            }
+          ]
         }
       }
     ]
