@@ -1947,11 +1947,13 @@ PUT totality_r/_doc/_bulk
 {"index":{"_index":"totality_r","_id":"3"}}
 {"name":"A State Park","relationship":[{"camping":"Yes","neighbor":"X State Park"}]}
 {"index":{"_index":"totality_r","_id":"4"}}
-{"name":"B State Park","relationship":[{"camping":"No","type":"X State Park"}]}
+{"name":"B State Park","relationship":[{"camping":"No","neighbor":"X State Park"}]}
 {"index":{"_index":"totality_r","_id":"5"}}
-{"name":"C State Park","relationship":[{"camping":"No","type":"Y State Park"}]}
+{"name":"C State Park","relationship":[{"camping":"No","neighbor":"Y State Park"}]}
 {"index":{"_index":"totality_r","_id":"6"}}
-{"name":"D State Park","relationship":[{"camping":"No","type":"Z State Park"}]}
+{"name":"D State Park","relationship":[{"camping":"No","neighbor":"Z State Park"}]}
+{"index":{"_index":"totality_r","_id":"7"}}
+{"name":"Z State Park","relationship":[{"camping":"No","neighbor":"A State Park"}]}
 ```
 
 <details>
@@ -2072,9 +2074,7 @@ GET totality_r/_search
 
 <details>
   <summary>View Solution (click to reveal)</summary>
-
-There should be four.  This is where the nesting comes into play as `FALSTAFF` himself decribes `PRINCE HENRY` as his only friend. But other people describe `FALSTAFF` as their friend.
-
+This will show neighors to Y state park as well.
 
 # query
 
@@ -2087,8 +2087,8 @@ GET totality_r/_search
       "query": {
         "bool": {
           "must": [
-            { "match": { "relationship.camping": "Yes" },
-                         "relationship.neighbor":  "Y State Park" }
+            { "match": { "relationship.camping": "Yes" }},
+            { "match": { "relationship.neighbor":  "Y State Park" }} 
           ]
         }
       }
