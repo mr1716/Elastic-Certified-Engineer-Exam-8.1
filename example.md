@@ -1210,7 +1210,61 @@ POST /totality-raw/_async_search?size=0
   }
 }
 ```
+### Write and execute a search query that is a Boolean combination of multiple queries and filters
+Write a query that provides all of the state parks in New Hampshire with a zip code of 03579. Add 
+```json
 
+GET totality-raw/_search
+{
+  "size": 200,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "state.keyword": "New Hampshire"
+          }
+        },
+        {
+          "term": {
+            "zip_code": "03579"
+          }
+        }
+      ]
+    }
+  }
+}   
+```
+Show the result above but filtering out the state parks with 0 seconds totality time
+```json
+GET totality-raw/_search
+{
+  "size": 200,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "state.keyword": "New Hampshire"
+          }
+        },
+        {
+          "term": {
+            "zip_code": "03579"
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "term": {
+            "totality_seconds": "0"
+          }
+        }
+      ]
+    }
+  }
+}    
+```
 ### Get Asynchronous Search Details
 ```json
 GET /_async_search/{id}
