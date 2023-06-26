@@ -1281,8 +1281,28 @@ POST /totality-raw-runtime/_bulk?refresh
 { "index": {}}
 {"name":"Androscoggin Wayside Park","street_address":"Route 16","city":"Milan","state":"New Hampshire","zip_code":"03588","timezone":"EDT","coverage":"100%","eclipse_date":"2024-04-08","totality_minutes":2,"totality_seconds":5,"partial_start_time":"2024-04-08T14:17:11.000Z","max_time":"2024-04-08T15:30:07.000Z","partial_end_time":"2024-04-08T16:38:57.000Z"}
 ```
-
-
+### Using an existing index to create a new runtime field
+```json
+PUT totality-raw/_mapping
+{
+  "runtime": {
+    "total-time-info": {
+      "type": "long",
+      "script": {
+        "source": """emit((doc['totality_minutes'].value * 60) + doc['totality_seconds'].value)""",
+        "params": {
+          "totality_seconds": {"type": "long"},
+          "totality_minutes": {"type": "long"}
+        }
+      }
+    }
+  }
+}
+//Output
+{
+  "acknowledged" : true
+}
+```
 <br> Step 2 Perform the search </br>
 The search could be:
 How many have seconds_per_site above a specific value such as 200.
@@ -1295,9 +1315,25 @@ GET totality-raw-runtime2/_search
   "size": 2
 }
 ```
-Bonus Options:
-Search for state parks where the value (parks_in_city, parks_in_zipcode, or parks_in_state) are above 2.
-
+### Defining a Runtime Field In A Search Request
+GET totality-raw/_search
+{
+  "runtime_mappings": {
+    "day_of_week": {
+      "type": "long",
+      "script": {
+        "source": "emit((doc['totality_minutes'].value * 60) + doc['totality_seconds'].value)"
+      }
+    }
+  },
+  "aggs": {
+    "day_of_week": {
+      "terms": {
+        "field": "day_of_week"
+      }
+    }
+  }
+}
 ## Performing Searches
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
