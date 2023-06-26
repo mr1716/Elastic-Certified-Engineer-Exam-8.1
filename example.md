@@ -105,7 +105,14 @@ xpack.searchable.snapshot.shared_cache.size=100mb
 ```
 
 ### Cross Cluster Replication
-(how is this done? insert here)
+[https://www.elastic.co/guide/en/elasticsearch/reference/8.8/high-availability.html] <br>
+The steps are:
+Add Remote Cluster
+Verify Remote Cluster Connection
+Privilege COnnection
+Create Follower Index to specific index
+Create an auto-follow pattern to replicate time series indeices
+
 
 ### Define an index that satisfies a given set of requirements
 Insert explanation here
@@ -2271,175 +2278,13 @@ PUT _ilm/policy/task3
 ```
 
 ### Define an index template that creates a new data stream 
-<b> Create ILM template </b>
 
-As far as i can tell ILM cron runs every 5-10mins.  So doing anything less than this does not work
-
+There are 2 options available:
+1) Convert an index alias to a data stream
+To convert an index alias with a write index to a data stream with the same name, use the migrate to data stream API. During conversion, the alias’s indices become hidden backing indices for the stream. The alias’s write index becomes the stream’s write index. The stream still requires a matching index template with data stream enabled.
 ```json
-PUT _ilm/policy/test-ilm
-{
-  "policy": {
-    "phases": {
-      "hot": {
-        "min_age": "0ms",
-        "actions": {
-          "rollover": {
-            "max_primary_shard_size": "50gb",
-            "max_age": "5m"
-          },
-          "set_priority": {
-            "priority": 100
-          }
-        }
-      },
-      "warm": {
-        "min_age": "10m",
-        "actions": {
-          "set_priority": {
-            "priority": 50
-          }
-        }
-      },
-      "cold": {
-        "min_age": "15m",
-        "actions": {
-          "set_priority": {
-            "priority": 0
-          }
-        }
-      },
-      "delete": {
-        "min_age": "30m",
-        "actions": {
-          "delete": {
-            "delete_searchable_snapshot": true
-          }
-        }
-      }
-    }
-  }
-}
+POST _data_stream/_migrate/my-time-series-data
 ```
 
-<b> Create an index template (not a data_stream) </b>
-
-```json
-PUT _index_template/test-ilm-tmpl
-{
-  "template": {
-    "settings": {
-      "index": {
-        "number_of_shards": 1,
-        "number_of_replicas" : 0,
-        "lifecycle": {
-          "name": "test-ilm",
-          "rollover_alias": "test-index"
-        }
-      }
-    },
-    "mappings": {
-      "properties": {
-        "@timestamp": {
-          "type": "date"
-        },
-        "field": {
-          "type": "text"
-        }
-      }
-    }
-  },
-  "index_patterns": [
-    "test-index-*"
-  ],
-  "composed_of": []
-}
-```
-
-<b> Bootstrap the initial index </b>
-:bulb: This is very important - do this before data ingest
-
-
-:bulb: Needs to have the aliases added or it won't work!
-
-```json
-PUT test-index-000000
-{
-  "aliases": {
-    "test-index": {
-      "is_write_index": true
-    }
-  }
-}
-```
-
-
-<b> Add a doc or two </b>
-
-```json
-PUT test-index/_doc/1
-{
-  "@timestamp" : "2021-10-04T16:26:00.000Z",
-  "field":"test data"
-}
-
-PUT test-index/_doc/2
-{
-  "@timestamp" : "2021-10-04T16:58:00.000Z",
-  "field":"test data"
-}
-```
-
-<b> Check index </b>
-
-```json
-GET test-index-000000
-```
-
-### Check alias
-
-```json
-GET test-index
-```
-
-### View ILM phase for each index (rinse and repeat here)
-
-At this point you will have indicies being created and rotated
-keep requerying this and see that they are.
-
-```json
-GET test-index/_ilm/explain?filter_path=*.*.age,*.*.phase
-```
-
-### Results
-
-So, importantly what you can see here is that the index is rolled over at 5-ish minutes.
-
-Then, each move to a new phase is from that initial rollover (at 5-ish minutes)
-
-You can also see that no time is exact.  So days/hours are a better time frame than minutes in production. (at least ths is what i saw).
-
-```json
-// output 
-
-{
-  "indices" : {
-    "test-index-000003" : {
-      "age" : "39.65m",
-      "phase" : "delete"
-    },
-    "test-index-000004" : {
-      "age" : "29.64m",
-      "phase" : "cold"
-    },
-    "test-index-000005" : {
-      "age" : "19.65m",
-      "phase" : "warm"
-    },
-    "test-index-000006" : {
-      "age" : "9.65m",
-      "phase" : "hot"
-    },
-  }
-}
-```
---------------------------------------
+2) Set Up A Data Stream Documentation
+   https://www.elastic.co/guide/en/elasticsearch/reference/current/set-up-a-data-stream.html#create-data-stream
