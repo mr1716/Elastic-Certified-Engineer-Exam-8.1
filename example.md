@@ -1977,7 +1977,7 @@ PUT totality_r
 </details>
 <hr/>
 
-:question: 2. Then query all items in the index that are the `neighbors` of `A State park` and have 'camping' set to 'Yes'
+:question: 2. Then query all items in the index that have 'camping' set to 'Yes'
 
 <details>
   <summary>View Solution (click to reveal)</summary>
@@ -1993,7 +1993,7 @@ GET totality_r/_search
       "query": {
         "bool": {
           "must": [
-            { "match": { "relationship.camping": "Yes" }},
+            { "match": { "relationship.camping": "Yes" }}
           ]
         }
       }
@@ -2002,7 +2002,7 @@ GET totality_r/_search
 }
 // output
 {
-  "took" : 5,
+  "took" : 1,
   "timed_out" : false,
   "_shards" : {
     "total" : 1,
@@ -2012,21 +2012,49 @@ GET totality_r/_search
   },
   "hits" : {
     "total" : {
-      "value" : 1,
+      "value" : 3,
       "relation" : "eq"
     },
-    "max_score" : 1.1507283,
+    "max_score" : 0.8266786,
     "hits" : [
       {
-        "_index" : "totality_r222",
-        "_id" : "_doc",
-        "_score" : 1.1507283,
+        "_index" : "totality_r5",
+        "_id" : "0",
+        "_score" : 0.8266786,
         "_source" : {
           "name" : "X State Park",
           "relationship" : [
             {
               "camping" : "Yes",
               "neighbor" : "Y State Park"
+            }
+          ]
+        }
+      },
+      {
+        "_index" : "totality_r5",
+        "_id" : "2",
+        "_score" : 0.8266786,
+        "_source" : {
+          "name" : "Z State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "A State Park"
+            }
+          ]
+        }
+      },
+      {
+        "_index" : "totality_r5",
+        "_id" : "3",
+        "_score" : 0.8266786,
+        "_source" : {
+          "name" : "A State Park",
+          "relationship" : [
+            {
+              "camping" : "Yes",
+              "neighbor" : "X State Park"
             }
           ]
         }
