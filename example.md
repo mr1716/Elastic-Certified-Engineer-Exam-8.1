@@ -1011,7 +1011,7 @@ Alternatives include renaming the states or cities, or something else.
 - Create a new index
 - with a mapping on the name field 
 - that utilises an analyser 
-- to rename the st name if it matches.
+- to rename the state name to its abbreviation if it matches.
 
 :question: 2. Write a custom analyzer that changes the name of `State Park` to `SP` in the `name` field, add this to a new index called `sp_name_replacer`
 
@@ -1066,12 +1066,9 @@ POST _analyze
 ```
 
 ## Put it all together
-- mappings -> `speaker` -> `"analyzer": "wayward_son_analyser"`
-- settings -> analysis -> `"wayward_son_analyser"` -> `"char_filter": ["rename_filter"]`
-- `"rename_filter"` -> `"pattern_replace"`
 
 ```json
-PUT /new-totality
+PUT /ok-custom-analyzer
 {
   "mappings": {
     "properties": {
@@ -1108,8 +1105,8 @@ PUT /new-totality
       "char_filter": {
         "rename_filter": {
           "type": "pattern_replace",
-          "pattern": "PRINCE HENRY",
-          "replacement": "WAYWARD PRINCE HAL"
+          "pattern": "Oklahoma",
+          "replacement": "OK"
         }
       }
     }
@@ -1127,15 +1124,15 @@ PUT /new-totality
 ```json
 POST _reindex
 {
-  "source": {
-    "index": "totality-all",
+  "source": { 
+    "index": "totality-raw",
     "query": {
       "term": {
-        "play_name": "Henry IV"
+        "state.keyword": "Oklahoma"
       }
     }
   },
-  "dest":   { "index": "totality-custom-analyzer" }
+  "dest":   { "index": "ok-custom-analyzer" }
 }
 ```
 </details>
@@ -1147,11 +1144,11 @@ POST _reindex
   <summary>View Solution (click to reveal)</summary>
 
 ```json
-GET totality-custom-analyzer/_search
+GET ok-custom-analyzer/_search
 {
   "query": {
     "term": {
-      "speaker": "HAL"
+      "state.keyword": "Ok"
     }
   }
 }
@@ -1239,13 +1236,104 @@ Other runtime fields could include, but are not limited to:
 - How many state parks are in the same state (parks_in_state)
 - How many state parks are in the same city (parks_in_city)
 
-Step 2 Perform the search
+There are 3 ways to get this done: 
+1) Create the runtime field when the index is created, which would require uploading new data
+2) Using an existing index to create a new runtime field
+3) Defining a Runtime Field In A Search Request
+
+### Create the runtime field when the index is created, which would require uploading new data
+   
+Step 1: Create The Runtime Field
+The first step is to create the runtime field, then we have to add data into it.
+#### This will create a new index
+```json
+PUT totality-raw-runtime/
+{
+  "mappings": {
+    "runtime": {
+      "total_seconds": {
+        "type": "long",
+        "script": {
+          "source": "emit((doc['totality_minutes'].value * 60) + doc['totality_seconds'].value);"
+        }
+      }
+    },
+    "properties": {
+      "@totality_seconds": {"type": "long"},
+	  "totality_minutes": {"type": "long"}
+    }
+  }
+}
+//Output
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "totality-raw-runtime"
+}
+```
+
+Then we will add in data into the system for testing. This is not the full list of the imported fields, but rather an example of what it would look like from the dev console. The full file can be found at the example-data folder in the put-runtime-fields.json file. 
+
+```json
+POST /totality-raw-runtime/_bulk?refresh
+{ "index": {}}
+{"name":"Ahern State Park","street_address":"43 Great Bay Lane","city":"Laconia","state":"New Hampshire","zip_code":"03246","timezone":"EDT","coverage_percent":"97.47%","eclipse_date":"2024-04-08","totality_minutes":0,"totality_seconds":0,"partial_start_time":"2024-04-08T14:16:03.000Z","max_time":"2024-04-08T15:29:32.000Z","partial_end_time":"2024-04-08T16:38:48.000Z"}
+{ "index": {}}
+{"name":"Androscoggin Wayside Park","street_address":"Route 16","city":"Milan","state":"New Hampshire","zip_code":"03588","timezone":"EDT","coverage":"100%","eclipse_date":"2024-04-08","totality_minutes":2,"totality_seconds":5,"partial_start_time":"2024-04-08T14:17:11.000Z","max_time":"2024-04-08T15:30:07.000Z","partial_end_time":"2024-04-08T16:38:57.000Z"}
+```
+### Using an existing index to create a new runtime field
+```json
+PUT totality-raw/_mapping
+{
+  "runtime": {
+    "total-time-info": {
+      "type": "long",
+      "script": {
+        "source": """emit((doc['totality_minutes'].value * 60) + doc['totality_seconds'].value)""",
+        "params": {
+          "totality_seconds": {"type": "long"},
+          "totality_minutes": {"type": "long"}
+        }
+      }
+    }
+  }
+}
+//Output
+{
+  "acknowledged" : true
+}
+```
+<br> Step 2 Perform the search </br>
 The search could be:
 How many have seconds_per_site above a specific value such as 200.
-
-Bonus Options:
-Search for state parks where the value (parks_in_city, parks_in_zipcode, or parks_in_state) are above 2.
-
+```json
+GET totality-raw-runtime2/_search
+{
+  "fields": [
+    "total_seconds"
+  ],
+  "size": 2
+}
+```
+### Defining a Runtime Field In A Search Request
+GET totality-raw/_search
+{
+  "runtime_mappings": {
+    "day_of_week": {
+      "type": "long",
+      "script": {
+        "source": "emit((doc['totality_minutes'].value * 60) + doc['totality_seconds'].value)"
+      }
+    }
+  },
+  "aggs": {
+    "day_of_week": {
+      "terms": {
+        "field": "day_of_week"
+      }
+    }
+  }
+}
 ## Performing Searches
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
