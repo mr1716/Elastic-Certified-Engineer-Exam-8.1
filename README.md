@@ -4,6 +4,8 @@ This is based off of the repository https://github.com/mohclips/Elastic-Certifie
 <br>
 The example.md file and .json files in the example-date folder go together to provide an example that walks your through each step. Make sure to be able to do everything and understand each aspect. 
 <br>
+Big thank you to Cosmospnw.com for their reliable data for us to use. Without it, it wouldnt be possible to obtain the data and have the example.
+<br>
 Use the shakespeare_6.0.json with the other .md files to walk through those examples!
 <br>
 ## Resources
