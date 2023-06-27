@@ -170,39 +170,13 @@ PUT _template/totality_2024-tmpl
 }
 ```
 Bonus/Other Questions:
-Question: Create a template for the state parks that are in totality includes:
-name, street address, city, state, state abbreviation, zipcode, coverage %, eclipse date, totality minutes, totality seconds, start time, maximum totality time, and end of the totality time.
+Question: Create a template for the state parks that are in totality that includes the mapping properties from above but add in the following: <br> state abbreviation <br>
 ```json
-PUT _template/totality_2024-tmpl
-{
-  "index_patterns": ["totality_2024-*"],
-  "settings": {
-    "number_of_shards": 1,
-    "number_of_replicas": 0
-  },
-  "mappings": {
-    "_source": {
-      "enabled": false
-    },
+
     "properties": {
-    "name" :  { "type": "keyword" },
-    "street_address" :  { "type": "keyword" },
-    "city" :  { "type": "keyword" },    
-    "state" :  { "type": "keyword" },
-    "timezone" : { "type": "keyword" },
-    "zip_code" :  { "type": "keyword" },    
-    "coverage" :  { "type": "keyword" },
-    "eclipse_date" :  { "type": "date" },
-    "totality_minutes" :  { "type": "integer" },
-    "totality_seconds" :  { "type": "integer" },
-    "partial_start_time" :  { "type": "date" },
-    "totality_start_time" :  { "type": "date" },      
-    "max_time" :  { "type": "date" },
-    "totality_end_time" :  { "type": "date" },            
-    "partial_end_time" :  { "type": "date" }
-    }
-  }
-}
+    ...
+    "state_abbrev" :  { "type": "keyword" },
+    ...
 ```
 
 Verify The results:
@@ -307,7 +281,7 @@ PUT dynamic-totality-raw
 }
 ```
 The next step is to add in data before the final step of verifying that it worked as intended.
-'''json
+```json
 PUT dynamic-totality-raw/_doc/1
 {
   "age": 22,
@@ -316,7 +290,7 @@ PUT dynamic-totality-raw/_doc/1
   "email": "fake@domain.com",
   "name":"Boaty McBoatface"
 }
-'''
+```
 
 ### Lets Upload The Data
 If running this in a single node environment, use the file named full-eclipse-data.json for the examples. It makes performing the examples significantly easier. Plus, the examples were designed for that purpose. A cross-cluster implementation will be implemented later. Will require copying the work done to the other clusters. <br>
@@ -324,9 +298,10 @@ The file named full-eclipse-data.json has all of the data we're going to use. It
 
 To find the data broken down by state into each line, check out the file unique-clusters.json [here](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/unique-clusters.json) <br> The benefit of this is that is broken down by each state each line. DO NOT attempt to upload this as 1 file. It is meant to be used to upload 1 line per cluster and provide the benfits of cross cluster search. <br>
 
-To upload this into elasticsearch, run: <br>
-$ curl -k -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/totality_info/_bulk --data-binary "@full-eclipse-data.json"; echo
+#### To upload this into elasticsearch, run: <br>
+ curl -k -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/totality_info/_bulk --data-binary "@full-eclipse-data.json"; echo
 
+<br>
 The reason for this is to be able to practice with cross cluster replication and cross cluster search!
 
 ### Define and use index aliases \*
@@ -451,7 +426,7 @@ GET totality-full/_count
 
 4. :question: BONUS: Run a query to do the same on `totality-raw` index
 
-Extra bonus: only print the total hits
+Extra bonus: only print the total hits for items such as when the coverage is 100%, how many parks are in a specific state or a specific zip code, how many have a totality minutes of 1, and much more.
 
 ```json
 POST totality-raw/_search?filter_path=hits.total.value
@@ -1403,6 +1378,7 @@ GET totality-raw-runtime2/_search
 }
 ```
 ### Defining a Runtime Field In A Search Request
+```json
 GET totality-raw/_search
 {
   "runtime_mappings": {
@@ -1421,6 +1397,7 @@ GET totality-raw/_search
     }
   }
 }
+```
 ## Performing Searches
 
 ### Write and execute a search query for terms and/or phrases in one or more fields of an index
@@ -1493,69 +1470,6 @@ GET totality-raw/_search
       "totality_minutes": {
         "gte": 0,
         "lte": 2
-      }
-    }
-  }
-}
-```
-```json
-GET totality-raw/_search
-{
-  "size": 200,
-  "query": {
-    "bool": {
-      "must": [
-        {
-          "term": {
-            "play_name": "Othello"
-          }
-        },
-        {
-          "wildcard": {
-            "text_entry.keyword": "*Desdemona*"
-          }
-        }
-      ],
-      "must_not": [
-        {
-          "term": {
-            "speaker": "OTHELLO"
-          }
-        }
-      ]
-    }
-  }
-}
-```
-```json
-GET shakespeare/_search
-{
-  "size": 200,
-  "query": {
-    "bool": {
-      "must": [
-        {
-          "term": {
-            "play_name": "Othello"
-          }
-        },
-        {
-          "wildcard": {
-            "text_entry.keyword": "*Desdemona*"
-          }
-        }
-      ],
-      "must_not": [
-        {
-          "term": {
-            "speaker": "OTHELLO"
-          }
-        }
-      ],
-      "filter": {
-        "term": {
-          "text_entry": "sweet"
-        }
       }
     }
   }
@@ -1640,7 +1554,7 @@ Basially here, you create each aggregation separately and then combine in the en
 One option is to create a date histogram for the latest totality start time on the day of the eclipse.
 
 ```json
-GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
+GET totality-raw/_search?filter_path=aggregations
 {
   "size":0,
   "aggs": {
@@ -1656,7 +1570,7 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 ```
 Sub-Aggregate by State grouping:
 ```json
-GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
+GET totality-raw/_search?filter_path=aggregations
 {
   "size": 0,
   "aggs": {
@@ -1671,7 +1585,7 @@ GET kibana_sample_data_ecommerce/_search?filter_path=aggregations
 
 Putting all together in a way (not combining the exact 2 from above) to show the total count of the totality minutes field for the state parks in Oklahoma:
 ```json
-GET oklahoma/_search?filter_path=aggregations
+GET totality-raw/_search?filter_path=aggregations
 {
   "size":0,
   "aggs": {
@@ -1887,14 +1801,14 @@ GET totality-raw/_search
 ### Write and execute a query that searches across multiple clusters
 In this instance, what we will assume is that each cluster has separate states information on it. Therefore, since there are 11 states in totality, there would be 11 clusters and 11 total indexes.
 
-'''json
+```json
 GET ny_parks_index,remote_cluster1:nh_parks_index,remote_cluster2:tx_parks_index
 {
   "query" : {
     "match_all" : {}
   }
 }
-'''
+```
 
 ### Define and use a search template
 A search template is a stored search you can run with different variables.
