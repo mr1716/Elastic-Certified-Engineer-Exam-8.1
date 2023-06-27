@@ -419,7 +419,7 @@ GET totality-full/_count
 
 4. :question: BONUS: Run a query to do the same on `totality-raw` index
 
-Extra bonus: only print the total hits
+Extra bonus: only print the total hits for items such as when the coverage is 100%, how many parks are in a specific state or a specific zip code, how many have a totality minutes of 1, and much more.
 
 ```json
 POST totality-raw/_search?filter_path=hits.total.value
