@@ -95,7 +95,7 @@ PUT _ilm/policy/task3
         }
       },
       "warm": {
-        "min_age": "0m",
+        "min_age": "3m",
         "actions": {
           "set_priority": {
             "priority": 50
