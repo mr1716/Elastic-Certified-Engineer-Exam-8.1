@@ -1,12 +1,12 @@
 # Attempts to provide some clarity on concepts and terms that are found on the exam.
-This isnt in any particular order
+This isn't in any particular order
 
 ## Sub-Aggregations
 These allow you to embed aggregations inside other aggregations.<br>
 Therefore, sub-aggregations allow continuously refine and separate groups of criteria of interest, then apply metrics at various levels in the aggregation hierarchy to generate your report.
 <br>
 ## Bucket vs Metric Aggregations
-The difference is that metric aggregations take the data and aggregate some extracted values. Bucket aggregations on the otherhand just bucket data according to some criteria.
+The difference is that metric aggregations take the data and aggregate some extracted values. Bucket aggregations on the other hand just bucket data according to some criteria.
 <br>
 Metric Aggregations:<br>
 The aggregations in this family compute metrics based on values extracted in one way or another from the documents that are being aggregated. The values are typically extracted from the fields of the document (using the field data), but can also be generated using scripts.
@@ -15,7 +15,7 @@ Bucket Aggregations:<br>
 Bucket aggregations don’t calculate metrics over fields like the metrics aggregations do, but instead, they create buckets of documents. Each bucket is associated with a criterion (depending on the aggregation type) which determines whether or not a document in the current context "falls" into it. In other words, the buckets effectively define document sets. In addition to the buckets themselves, the bucket aggregations also compute and return the number of documents that "fell into" each bucket.
 
 ## Index and Index Template
-What is an index and index template? What is difference between the 2, when would use 1 vs the other, and benefits of 1 vs the other!
+What is an index and index template? What is the difference between the 2, when would use 1 vs the other, and benefits of 1 vs the other!
 
 ## Dynamic Template
 These allow you greater control of how Elasticsearch maps your data beyond the default dynamic field mapping rules. You enable dynamic mapping by setting the dynamic parameter to true or runtime. You can then use dynamic templates to define custom mappings that can be applied to dynamically added fields based on the matching condition

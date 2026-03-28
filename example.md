@@ -3,7 +3,7 @@
 The goal of this is to provide a unified and easy example for someone to go through and be able to study for the Elasticsearch Engineer exam using unified data.
 
 ### Notes:
-If you dont want to use 2 environments and perform the cross cluster work, then you can skip those sections and only configure 1 Elasticsearch machine. 
+If you don't want to use 2 environments and perform the cross cluster work, then you can skip those sections and only configure 1 Elasticsearch machine. 
 ### What this does cover:
 Everything else on the topic list for the 8.1 exam as of June 15th, 2023. 
 
@@ -24,7 +24,7 @@ The way that this will work is that it will walk you through creating an environ
 
 # Configuring The Environment (Multiple Clusters)
 ### You might need to configure multiple clusters on the exam, but rather cross cluster searches and cross-cluster replication. 
-<b> There are other cluster management topics that dont necessarily require multiple clusters such as:
+<b> There are other cluster management topics that don't necessarily require multiple clusters such as:
 1) Diagnose shard issues and repair a cluster's health
 2) Backup and restore a cluster and/or specific indices
 3) Configure a snapshot to be searchable
@@ -82,7 +82,7 @@ GET _cat/shards/broken_index?v&s=index
 
 ```
 ### Repair And Index
-Repairing an index can be done in many ways such as reducing the number of replicas required. This would be done to matche the number of replia nodes available. In the event that a single node cluster is running, the number of replicas can be set to 0. 
+Repairing an index can be done in many ways such as reducing the number of replicas required. This would be done to match the number of replica nodes available. In the event that a single node cluster is running, the number of replicas can be set to 0. 
 
 This might not need to be repaired, but if you do notice issues, here's how you would do it!
 
@@ -109,9 +109,9 @@ xpack.searchable.snapshot.shared_cache.size=100mb
 The steps are:
 Add Remote Cluster
 Verify Remote Cluster Connection
-Privilege COnnection
+Privilege Connection
 Create Follower Index to specific index
-Create an auto-follow pattern to replicate time series indeices
+Create an auto-follow pattern to replicate time series indices
 
 
 ### Define an index that satisfies a given set of requirements
@@ -128,13 +128,13 @@ Insert explanation here
 The expected response should be similar to:
 ```json
 {
-  "acknowleged": true,
-  "shards_acknowleged": true,
+  "acknowledged": true,
+  "shards_acknowledged": true,
   "index": "totality-2024-raw"
 }
 ```
 ### Define and use an index template for a given pattern that satisfies a given set of requirements
-What we will do is create several different index template
+What we will do is create several different index templates
 Create an index for totality for everything. And for each state
 
 
@@ -245,7 +245,7 @@ GET _template/totality-2024-tmpl
 ```
 
 ### Define and use a dynamic template that satisfies a given set of requirements
-This isnt a greatest example, but it works.This doesnt do the best job of showing what it can do, but the thing is that these are used instead of the tempalte above to create a more dynamic template and index<br>
+This isn't the greatest example, but it works. This doesn't do the best job of showing what it can do, but the thing is that these are used instead of the template above to create a more dynamic template and index<br>
 What we can do is use a dynamic template to define the totality minutes and seconds fields as longs, from strings.
 ```json
 PUT dynamic-totality-raw
@@ -296,7 +296,7 @@ PUT dynamic-totality-raw/_doc/1
 If running this in a single node environment, use the file named full-eclipse-data.json for the examples. It makes performing the examples significantly easier. Plus, the examples were designed for that purpose. A cross-cluster implementation will be implemented later. Will require copying the work done to the other clusters. <br>
 The file named full-eclipse-data.json has all of the data we're going to use. It is found [here]([https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/solar_eclipse_2024.json](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/full-eclipse-data.json)) <br> 
 
-To find the data broken down by state into each line, check out the file unique-clusters.json [here](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/unique-clusters.json) <br> The benefit of this is that is broken down by each state each line. DO NOT attempt to upload this as 1 file. It is meant to be used to upload 1 line per cluster and provide the benfits of cross cluster search. <br>
+To find the data broken down by state into each line, check out the file unique-clusters.json [here](https://github.com/mr1716/Elastic-Certified-Engineer-Exam-8.1/blob/main/example-date/unique-clusters.json) <br> The benefit of this is that is broken down by each state each line. DO NOT attempt to upload this as 1 file. It is meant to be used to upload 1 line per cluster and provide the benefits of cross cluster search. <br>
 
 #### To upload this into elasticsearch, run: <br>
  curl -k -u "elastic:Password01" -s -H "Content-Type: application/x-ndjson" -XPUT localhost:9200/totality_info/_bulk --data-binary "@full-eclipse-data.json"; echo
@@ -538,7 +538,7 @@ Get some example docs
 ```json
 GET /totality-raw/_search?q=coverage:100%
 ```
-THe output should look similar to:
+The output should look similar to:
 ```json
 {
   "took": 7,
@@ -1198,7 +1198,7 @@ GET /twitter,cluster_one:twitter,cluster_two:twitter/_search
 ``` 
 
 ## Asynchronous Search
--Note there isnt enough data to provide a good use case for this to show its true functionality. But these are examples. 
+-Note there isn't enough data to provide a good use case for this to show its true functionality. But these are examples. 
 
 ### Write an asynchronous search to sort by timestamp
 ```json
@@ -1405,7 +1405,7 @@ How many state parks in Vermont are in the path of totality? <br>
 How many places have Vermont, Maine, New Hampshire, or Oklahoma as the state? <br>
 How many have totality minutes between 3 and 5 minutes? <br>
 
-How many times do the words New Hanpshire appear in the eclipse data? <br>
+How many times do the words New Hampshire appear in the eclipse data? <br>
 ```json
 GET totality-raw/_search
 {
@@ -1484,7 +1484,7 @@ What we will do is use the index aliases and created indexes so far to perform a
 
 ### Metric Aggregations
 Some options include but not limited to:
-- Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of total numnber of parks. <br>
+- Average coverage, average time, max time, min time > 0, sum of time for parks that are 100%, sum of total number of parks. <br>
 The example below shows the maximum amount of minutes.
 ```json
 POST /totality-raw/_search
@@ -1494,7 +1494,7 @@ POST /totality-raw/_search
   }
 }
 ```
-This isnt an exhaustive or exclusive list as there are opportunities for metric aggregations that arent listed below plus there are metric aggregations that cannot apply to this data. Be aware that they exist and understand where the documentation is so if questioned, you know where to find. <br>
+This isn't an exhaustive or exclusive list as there are opportunities for metric aggregations that aren't listed below plus there are metric aggregations that cannot apply to this data. Be aware that they exist and understand where the documentation is so if questioned, you know where to find. <br>
 Other bucket aggregations applicable to this data include: <br>
 - Average totality time
 - Maximum totality time
@@ -1522,7 +1522,7 @@ GET totality-raw/_search?filter_path=aggregations
   }
 }
 ```
-This isnt an exhaustive or exclusive list as there are opportunities for bucket aggregations that arent listed below plus there are bucket aggregations that cannot apply to this data. Be aware that they exist and understand where the documentation is so if questioned, you know where to find. <br>
+This isn't an exhaustive or exclusive list as there are opportunities for bucket aggregations that aren't listed below plus there are bucket aggregations that cannot apply to this data. Be aware that they exist and understand where the documentation is so if questioned, you know where to find. <br>
 Other bucket aggregations applicable to this data include: <br>
 - Date Range for totality starting
 - Date Range for totality ending
@@ -1536,8 +1536,8 @@ Other bucket aggregations applicable to this data include: <br>
 ### Write and execute aggregations that contain sub-aggregations
 There are several different sub-aggregations that we can run. These are just examples, and not representative of everything that could be done for sub-aggregations for this data.
 - Which state park in totality has the longest total number of minutes for State X?
-- Which state park in totality has the shortes total number of minutes for State X?
-- Which state park in totality has the shortes total totality time for State X?
+- Which state park in totality has the shortest total number of minutes for State X?
+- Which state park in totality has the shortest total totality time for State X?
 - Which state park in totality has the shortest total totality time for State X?
 - What is the average totality minutes for State X?
 - What is the average totality seconds for State X?
@@ -1549,7 +1549,7 @@ To do any one of the examples above, the high level way to do this would be to:
 - Group that aggregation where the coverage is equal to 100%
 - Then finally, 
 
-Basially here, you create each aggregation separately and then combine in the end.
+Basically here, you create each aggregation separately and then combine in the end.
 
 One option is to create a date histogram for the latest totality start time on the day of the eclipse.
 
@@ -2075,7 +2075,7 @@ GET totality_r/_search
 
 <details>
   <summary>View Solution (click to reveal)</summary>
-This will show neighors to Y state park as well.
+This will show neighbors to Y state park as well.
 
 # query
 
@@ -2138,7 +2138,7 @@ GET totality_r/_search
 <hr/>
 
 ### Define an Index Lifecycle Management policy for a time-series index 
-<b> This isnt necessarily specific to this but is inportant to setup</b>
+<b> This isn't necessarily specific to this but is important to setup</b>
 Example from Rich Raposa (Elastic Exam video):<br>
   the corresponding index template is called task3<br>
   the data is hot for 3 minutes, then immediately rolls over to warm<br>

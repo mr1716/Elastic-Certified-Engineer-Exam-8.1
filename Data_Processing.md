@@ -177,7 +177,7 @@ POST _analyze
       "position" : 101
     },
     {
-      "token" : "PRINEC HARRY",
+      "token" : "PRINCE HARRY",
       "start_offset" : 28,
       "end_offset" : 40,
       "type" : "word",
