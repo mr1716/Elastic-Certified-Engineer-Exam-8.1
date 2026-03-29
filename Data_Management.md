@@ -262,7 +262,7 @@ GET test-index
 
 ## View ILM phase for each index (rinse and repeat here)
 
-At this point you will have indicies being created and rotated
+At this point you will have indices being created and rotated
 keep requerying this and see that they are.
 
 ```json
@@ -275,7 +275,7 @@ So, importantly what you can see here is that the index is rolled over at 5-ish 
 
 Then, each move to a new phase is from that initial rollover (at 5-ish minutes)
 
-You can also see that no time is exact.  So days/hours are a better time frame than minutes in production. (at least ths is what i saw).
+You can also see that no time is exact.  So days/hours are a better time frame than minutes in production. (at least this is what i saw).
 
 ```json
 // output 
@@ -303,7 +303,7 @@ You can also see that no time is exact.  So days/hours are a better time frame t
 ```
 
 # Another example for timeseries data
-## 1 .define an ILM policy to the following requirements
+## 1. Define an ILM policy to the following requirements
 - ILM policy name `timeseries_policy`
 
 Rollover at:

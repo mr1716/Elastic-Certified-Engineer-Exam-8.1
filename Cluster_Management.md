@@ -3,7 +3,7 @@
 
 # Diagnose shard issues and repair a cluster's health
 
-:bulb: Pre-requistes:  Add a broken index (this is more about the diagnosis commands than the actual broken index)
+:bulb: Pre-requisites:  Add a broken index (this is more about the diagnosis commands than the actual broken index)
 
 ```json
 # delete if already in place
@@ -163,7 +163,7 @@ Why is that?
 
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/cluster-allocation-explain.html
 
-A lot of information is presented here, if you have a larger underlying issue you will see many explainations across many indices.  Try to keep that in mind.
+A lot of information is presented here, if you have a larger underlying issue you will see many explanations across many indices.  Try to keep that in mind.
 
 For each index and then each node, read the explanations
 
@@ -174,7 +174,7 @@ For each index and then each node, read the explanations
 
 ## Repair
 
-:question: Repair by reducing the number of replicas required.  This matches the number of replia nodes available.  In this case 0 as we are running on a single node cluster.
+:question: Repair by reducing the number of replicas required.  This matches the number of replica nodes available.  In this case 0 as we are running on a single node cluster.
 
 ```json
 PUT /broken_index/_settings
@@ -261,7 +261,7 @@ You will need to make sure that the `path.repo` setting has been applied to each
 
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/snapshots-register-repository.html
 
-The docker images in this Git Repository have this set in the `1es-1kb-xpackSec.yml` single node cluster.  Which was used predominately through out the other sections.
+The docker images in this Git Repository have this set in the `1es-1kb-xpackSec.yml` single node cluster.  Which was used predominantly throughout the other sections.
 
 Normally you would save the snapshots to share storage like NFS, AWS S3 etc.   In this demo we use the local filesystem `/tmp` this is not recommended in production.
 
@@ -291,7 +291,7 @@ GET /_nodes?pretty&filter_path=nodes.*.settings.path
 ```
 As you can see the `path.repo` is set to `/tmp`.
 
-## Regster the backup location
+## Register the backup location
 ```json
 PUT /_snapshot/my_test_backup
 {
@@ -425,7 +425,7 @@ Normally `/etc/elasticsearch`
 GET _cluster/settings?pretty&flat_settings&filter_path=persistent
 ```
 
-So, it's a probably good idea to backup your `/etc/elasticsearch/` folder and run an external API call to download the persistant settings to a text file.
+So, it's a probably good idea to backup your `/etc/elasticsearch/` folder and run an external API call to download the persistent settings to a text file.
 
 4. :closed_book: Backup/Restore the Security configuration
 
@@ -652,7 +652,7 @@ GET /cluster_one:twitter/_search
   }
 }
 ```
-Here we search one of the remote clusters from inside out local cluster.
+Here we search one of the remote clusters from inside our local cluster.
 
 Remote clusters are accessed as such <remote_name>:<index_name>
 
@@ -708,7 +708,7 @@ You will have to setup a 30day trial licence, to be able to do this part of the 
 
 Do this in Kibana as per the instructions above.
 
-:warning: You will have to start one incognito/private browsing session or use different browsers to connect to both kibana instnaces at once.  This is due to the browser security cookies overwriting each other and subsequently logging you out everytime. :)
+:warning: You will have to start one incognito/private browsing session or use different browsers to connect to both kibana instances at once.  This is due to the browser security cookies overwriting each other and subsequently logging you out everytime. :)
 
 `Stack Management -> Remote Clusters -> Add a remote cluster`
 
@@ -947,7 +947,7 @@ GET kibana_sample_data_flights/_count
 
 :warning: can only be applied if you have purchased an elastic licence. This will not work on the Basic/Free licence.
 
-- a role called `flights_australia` for read only access on the Flght data that only allows access to data that has a Destination Country of Australia.
+- a role called `flights_australia` for read only access on the Flight data that only allows access to data that has a Destination Country of Australia.
 - the following fields are allowed to be displayed: Flight Number, Country of Origin and City of Origin
 - a user called `flight_reader_au` should have the role applied to it
 
